@@ -9,7 +9,6 @@ Follow these steps to clone this project and run it on your own machine:
 git https://github.com/kameshp1815/Auto-Share-Pooling.git
 cd AutoSharePolling
 ```
-*(Replace with your actual GitHub repo URL.)*
 
 ### 2. Set Up the Backend (Server)
 ```sh
