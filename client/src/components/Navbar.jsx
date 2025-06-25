@@ -30,7 +30,7 @@ export default function Navbar({ token, setToken }) {
 
   return (
     <nav className="bg-white/60 backdrop-blur-md shadow sticky top-0 z-50 border-b border-white/30">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-2 sm:px-4 py-3">
         <div className={`text-2xl font-bold tracking-wide ${isDriverPage ? 'text-green-700' : 'text-red-600 hover:text-red-700 transition-colors duration-200'}`}>
           <Link to="/">AutoSharePolling{isDriverPage ? ' Driver' : ''}</Link>
         </div>
@@ -108,7 +108,7 @@ export default function Navbar({ token, setToken }) {
           display: block;
           width: 0;
           height: 2px;
-          background: linear-gradient(90deg, #2563eb 0%, #f59e42 100%);
+          background: #2563eb;
           transition: width 0.3s;
           border-radius: 2px;
           margin: 0 auto;

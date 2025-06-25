@@ -8,7 +8,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-yellow-100 via-white to-blue-100 px-2 sm:px-4">
       {/* Hero Section */}
-      <section className="w-full flex flex-col md:flex-row items-center justify-between px-2 sm:px-8 py-10 sm:py-16 md:py-24">
+      <section className="w-full flex flex-col md:flex-row items-center justify-between px-2 sm:px-8 py-8 sm:py-16 md:py-24">
         <div className="flex-1 flex flex-col items-start justify-center mb-8 md:mb-0">
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-red-600 mb-4 sm:mb-6 leading-tight drop-shadow">
             Book Your <span className="text-yellow-500">Taxi</span> Instantly!
@@ -27,7 +27,7 @@ export default function Dashboard() {
           <img
             src={autoImg}
             alt="Taxi"
-            className="w-48 h-48 sm:w-80 sm:h-80 md:w-[28rem] md:h-[28rem] object-contain animate-bounce-slow"
+            className="w-40 h-40 sm:w-80 sm:h-80 md:w-[28rem] md:h-[28rem] object-contain animate-bounce-slow"
           />
         </div>
       </section>

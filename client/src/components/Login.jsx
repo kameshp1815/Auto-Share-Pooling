@@ -32,7 +32,7 @@ export default function Login({ onLogin }) {
       <div className="w-full max-w-md bg-white/90 rounded-2xl shadow-2xl p-4 sm:p-8 border border-yellow-100/60">
         <img src={autoLogo} alt="Login Logo" className="w-16 h-16 sm:w-20 sm:h-20 mb-4 drop-shadow-lg rounded-full border-4 border-yellow-300 bg-white mx-auto" />
         <h2 className="text-2xl sm:text-3xl font-extrabold mb-2 text-yellow-700 tracking-tight text-center">Login</h2>
-        <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
+        <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4 sm:gap-5">
           {error && <div className="mb-2 text-red-500 text-center font-medium bg-red-50 border border-red-200 rounded-lg py-2">{error}</div>}
           <div className="flex flex-col gap-2">
             <label className="text-sm font-semibold text-gray-700 mb-1">Email</label>

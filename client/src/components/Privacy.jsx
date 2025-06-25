@@ -3,7 +3,7 @@ import { FaUserSecret, FaLock, FaExchangeAlt, FaRegCheckCircle } from "react-ico
 
 export default function Privacy() {
   return (
-    <div className="max-w-2xl mx-auto p-6 mt-8 bg-white/90 rounded-2xl shadow-2xl border border-yellow-100/60 backdrop-blur-xl">
+    <div className="max-w-2xl mx-auto p-4 sm:p-6 mt-6 sm:mt-8 bg-white/90 rounded-2xl shadow-2xl border border-yellow-100/60 backdrop-blur-xl">
       <div className="flex items-center gap-4 mb-6">
         <div className="bg-yellow-100 rounded-full p-4 shadow">
           <FaUserSecret className="text-yellow-500 text-4xl" />

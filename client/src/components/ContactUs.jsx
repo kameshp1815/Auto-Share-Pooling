@@ -42,7 +42,7 @@ export default function ContactUs() {
             Have questions or need support? We're here to help! Reach out to our team and we'll get back to you as soon as possible.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
           {/* Contact Form */}
           <div className="bg-white/80 rounded-2xl shadow-xl p-4 sm:p-8 border border-white/20">
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -113,7 +113,7 @@ export default function ContactUs() {
             </form>
           </div>
           {/* Contact Info and Quick Actions */}
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             <div className="bg-white/80 rounded-2xl shadow-xl p-4 sm:p-8 border border-white/20">
               <h2 className="text-lg sm:text-2xl font-bold text-blue-700 mb-4">Contact Information</h2>
               <div className="space-y-4">

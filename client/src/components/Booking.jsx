@@ -491,17 +491,17 @@ export default function Booking() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-white to-yellow-200 flex flex-col items-center justify-start font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-white to-yellow-200 flex flex-col items-center justify-start font-sans px-2 sm:px-0">
       {/* Header */}
       <div className="w-full bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-500 shadow-md border-b border-yellow-200/60 backdrop-blur-md">
-        <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-md mx-auto px-2 sm:px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-white/70 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg border border-yellow-200">
               <span className="text-yellow-500 font-extrabold text-2xl tracking-tight">A</span>
             </div>
             <div>
-              <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight drop-shadow-sm">AutoSharePolling</h1>
-              <p className="text-xs text-yellow-900 font-medium opacity-80">Book your ride</p>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight drop-shadow-sm">AutoSharePolling</h1>
+              <p className="text-xs sm:text-sm text-yellow-900 font-medium opacity-80">Book your ride</p>
             </div>
           </div>
           <div className="w-8 h-8 bg-yellow-100/80 rounded-xl flex items-center justify-center shadow border border-yellow-200">
@@ -512,8 +512,8 @@ export default function Booking() {
 
       {/* Payment Modal */}
       {showPaymentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md relative animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 px-2">
+          <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-8 w-full max-w-md relative animate-fade-in">
             <button
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
               onClick={() => setShowPaymentModal(false)}
@@ -521,12 +521,12 @@ export default function Booking() {
             >
               <FaTimes />
             </button>
-            <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">Choose Payment Method</h2>
-            <div className="grid grid-cols-2 gap-4 mb-8">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-6 text-center">Choose Payment Method</h2>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-8">
               {paymentOptions.map(opt => (
                 <button
                   key={opt.key}
-                  className={`flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all duration-200 shadow hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-lg font-semibold gap-2
+                  className={`flex flex-col items-center justify-center p-4 sm:p-6 rounded-2xl border-2 transition-all duration-200 shadow hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-base sm:text-lg font-semibold gap-2
                     ${selectedPaymentMethod === opt.key ? 'border-yellow-400 bg-yellow-50/80 scale-105 shadow-lg' : 'border-gray-200 bg-white/40 hover:border-yellow-300'}`}
                   onClick={() => setSelectedPaymentMethod(opt.key)}
                 >
@@ -536,7 +536,7 @@ export default function Booking() {
               ))}
             </div>
             <button
-              className="w-full py-3 rounded-2xl text-lg font-bold shadow-lg bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-400 transition-all duration-200"
+              className="w-full py-3 rounded-2xl text-base sm:text-lg font-bold shadow-lg bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-400 transition-all duration-200"
               onClick={handleProceedPayment}
             >
               Proceed to Pay
@@ -546,48 +546,48 @@ export default function Booking() {
       )}
 
       {/* Main Content: Booking Form Only */}
-      <form onSubmit={handleSubmit} className="w-full max-w-md flex-1 flex flex-col px-2 py-6">
-        <div className="bg-white/60 backdrop-blur-xl rounded-3xl shadow-2xl p-6 mb-4 relative border border-yellow-100/60">
+      <form onSubmit={handleSubmit} className="w-full max-w-md flex-1 flex flex-col px-0 sm:px-2 py-6">
+        <div className="bg-white/60 backdrop-blur-xl rounded-3xl shadow-2xl p-4 sm:p-6 mb-4 relative border border-yellow-100/60">
           {/* Vehicle Selection */}
           <div className="mb-8">
             <h2 className="text-base font-semibold text-gray-800 mb-3">Choose your ride</h2>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               <button
                 type="button"
-                onClick={() => handleVehicleChange("bike")}
-                className={`flex flex-col items-center p-4 rounded-2xl border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm hover:scale-105 ${
-                  vehicle === "bike"
-                    ? "border-yellow-400 bg-yellow-50/80 shadow-lg scale-105"
-                    : "border-gray-200 hover:border-yellow-300 bg-white/40"
+                onClick={() => handleVehicleChange('bike')}
+                className={`flex flex-col items-center p-3 sm:p-4 rounded-2xl border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm hover:scale-105 ${
+                  vehicle === 'bike'
+                    ? 'border-yellow-400 bg-yellow-50/80 shadow-lg scale-105'
+                    : 'border-gray-200 hover:border-yellow-300 bg-white/40'
                 }`}
               >
-                <span className="text-4xl mb-1 transition-transform duration-200" style={{ filter: vehicle === 'bike' ? 'drop-shadow(0 2px 8px #facc15aa)' : '' }}>🛵</span>
+                <span className="text-3xl sm:text-4xl mb-1 transition-transform duration-200" style={{ filter: vehicle === 'bike' ? 'drop-shadow(0 2px 8px #facc15aa)' : '' }}>🏍️</span>
                 <span className="font-semibold text-xs">Bike</span>
                 <span className="text-[10px] text-gray-500 mt-1">₹20 + ₹8/km</span>
               </button>
               <button
                 type="button"
-                onClick={() => handleVehicleChange("auto")}
-                className={`flex flex-col items-center p-4 rounded-2xl border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm hover:scale-105 ${
-                  vehicle === "auto"
-                    ? "border-yellow-400 bg-yellow-50/80 shadow-lg scale-105"
-                    : "border-gray-200 hover:border-yellow-300 bg-white/40"
+                onClick={() => handleVehicleChange('auto')}
+                className={`flex flex-col items-center p-3 sm:p-4 rounded-2xl border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm hover:scale-105 ${
+                  vehicle === 'auto'
+                    ? 'border-yellow-400 bg-yellow-50/80 shadow-lg scale-105'
+                    : 'border-gray-200 hover:border-yellow-300 bg-white/40'
                 }`}
               >
-                <span className="text-4xl mb-1 transition-transform duration-200" style={{ filter: vehicle === 'auto' ? 'drop-shadow(0 2px 8px #facc15aa)' : '' }}>🛺</span>
+                <span className="text-3xl sm:text-4xl mb-1 transition-transform duration-200" style={{ filter: vehicle === 'auto' ? 'drop-shadow(0 2px 8px #facc15aa)' : '' }}>🛺</span>
                 <span className="font-semibold text-xs">Auto</span>
                 <span className="text-[10px] text-gray-500 mt-1">₹30 + ₹12/km</span>
               </button>
               <button
                 type="button"
-                onClick={() => handleVehicleChange("cab")}
-                className={`flex flex-col items-center p-4 rounded-2xl border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm hover:scale-105 ${
-                  vehicle === "cab"
-                    ? "border-yellow-400 bg-yellow-50/80 shadow-lg scale-105"
-                    : "border-gray-200 hover:border-yellow-300 bg-white/40"
+                onClick={() => handleVehicleChange('cab')}
+                className={`flex flex-col items-center p-3 sm:p-4 rounded-2xl border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm hover:scale-105 ${
+                  vehicle === 'cab'
+                    ? 'border-yellow-400 bg-yellow-50/80 shadow-lg scale-105'
+                    : 'border-gray-200 hover:border-yellow-300 bg-white/40'
                 }`}
               >
-                <span className="text-4xl mb-1 transition-transform duration-200" style={{ filter: vehicle === 'cab' ? 'drop-shadow(0 2px 8px #facc15aa)' : '' }}>🚗</span>
+                <span className="text-3xl sm:text-4xl mb-1 transition-transform duration-200" style={{ filter: vehicle === 'cab' ? 'drop-shadow(0 2px 8px #facc15aa)' : '' }}>🚗</span>
                 <span className="font-semibold text-xs">Cab</span>
                 <span className="text-[10px] text-gray-500 mt-1">₹50 + ₹18/km</span>
               </button>
