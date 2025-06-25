@@ -3,18 +3,18 @@ import { FaShieldAlt, FaUserCheck, FaShareAlt, FaHeadset, FaMapMarkedAlt, FaPump
 
 export default function Safety() {
   return (
-    <div className="max-w-2xl mx-auto p-6 mt-8 bg-white/90 rounded-2xl shadow-2xl border border-yellow-100/60 backdrop-blur-xl">
+    <div className="max-w-2xl mx-auto p-4 sm:p-6 mt-6 sm:mt-8 bg-white/90 rounded-2xl shadow-2xl border border-yellow-100/60 backdrop-blur-xl">
       {/* Hero Section */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="bg-yellow-100 rounded-full p-4 shadow">
+      <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
+        <div className="bg-yellow-100 rounded-full p-4 shadow mb-2 sm:mb-0">
           <FaShieldAlt className="text-yellow-500 text-4xl" />
         </div>
         <div>
-          <h1 className="text-3xl font-extrabold text-yellow-700 mb-1">Your Safety is Our Priority</h1>
-          <p className="text-gray-600 font-medium">We are committed to providing a safe and secure ride experience for every user.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-yellow-700 mb-1">Your Safety is Our Priority</h1>
+          <p className="text-gray-600 font-medium text-sm sm:text-base">We are committed to providing a safe and secure ride experience for every user.</p>
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6 mb-6 sm:mb-8">
         <div className="flex items-start gap-3">
           <FaUserCheck className="text-yellow-500 text-2xl mt-1" />
           <div>
@@ -58,9 +58,9 @@ export default function Safety() {
           </div>
         </div>
       </div>
-      <div className="mt-8 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-xl flex items-center gap-4 shadow">
-        <FaHeadset className="text-yellow-500 text-3xl" />
-        <div className="text-gray-700 text-lg font-semibold">
+      <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-xl flex items-center gap-3 sm:gap-4 shadow">
+        <FaHeadset className="text-yellow-500 text-2xl sm:text-3xl" />
+        <div className="text-gray-700 text-base sm:text-lg font-semibold">
           For emergencies, call our helpline: <span className="font-bold text-yellow-700">1800-123-4567</span>
         </div>
       </div>

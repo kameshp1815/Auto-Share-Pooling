@@ -33,63 +33,49 @@ export default function ContactUs() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-white to-blue-100 px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-white to-blue-100 px-2 sm:px-4 py-6 sm:py-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-extrabold text-blue-700 tracking-tight mb-4">Contact Us</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+        <div className="text-center mb-8 sm:mb-12 px-2">
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-blue-700 tracking-tight mb-3 sm:mb-4">Contact Us</h1>
+          <p className="text-base sm:text-xl text-gray-600 max-w-2xl mx-auto">
             Have questions or need support? We're here to help! Reach out to our team and we'll get back to you as soon as possible.
           </p>
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Contact Form */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20">
-            <h2 className="text-2xl font-bold text-blue-700 mb-6">Send us a Message</h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-all bg-white/50 backdrop-blur-sm"
-                    placeholder="Enter your full name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-all bg-white/50 backdrop-blur-sm"
-                    placeholder="Enter your email"
-                  />
-                </div>
+          <div className="bg-white/80 rounded-2xl shadow-xl p-4 sm:p-8 border border-white/20">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="flex flex-col">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                <input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 transition placeholder-gray-400 bg-gray-50"
+                  placeholder="Your Name"
+                />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Subject *
-                </label>
+              <div className="flex flex-col">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                <input
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 transition placeholder-gray-400 bg-gray-50"
+                  placeholder="Your Email"
+                />
+              </div>
+              <div className="flex flex-col">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
                 <select
                   name="subject"
                   value={formData.subject}
                   onChange={handleChange}
                   required
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-all bg-white/50 backdrop-blur-sm"
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 transition bg-white/50 backdrop-blur-sm"
                 >
                   <option value="">Select a subject</option>
                   <option value="general">General Inquiry</option>
@@ -100,62 +86,40 @@ export default function ContactUs() {
                   <option value="other">Other</option>
                 </select>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Message *
-                </label>
+              <div className="flex flex-col">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message *</label>
                 <textarea
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
                   required
-                  rows={6}
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-all bg-white/50 backdrop-blur-sm resize-none"
+                  rows={5}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 transition bg-gray-50 resize-none"
                   placeholder="Tell us how we can help you..."
                 />
               </div>
-
               {submitMessage && (
-                <div className="p-4 bg-green-100 text-green-700 rounded-xl border border-green-200">
+                <div className="p-3 bg-green-100 text-green-700 rounded-xl border border-green-200 text-center">
                   {submitMessage}
                 </div>
               )}
-
               <button
                 type="submit"
+                className="w-full bg-gradient-to-r from-blue-500 to-yellow-400 text-white py-3 rounded-lg font-bold shadow-md hover:from-blue-600 hover:to-yellow-500 transition-all text-lg mt-2"
                 disabled={isSubmitting}
-                className="w-full bg-blue-500 text-white py-3 rounded-xl font-semibold shadow-lg hover:bg-blue-600 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? "Sending..." : "Send Message"}
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </button>
             </form>
           </div>
-
-          {/* Contact Information */}
+          {/* Contact Info and Quick Actions */}
           <div className="space-y-8">
-            {/* Company Info */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20">
-              <h2 className="text-2xl font-bold text-blue-700 mb-6">Get in Touch</h2>
-              
-              <div className="space-y-6">
+            <div className="bg-white/80 rounded-2xl shadow-xl p-4 sm:p-8 border border-white/20">
+              <h2 className="text-lg sm:text-2xl font-bold text-blue-700 mb-4">Contact Information</h2>
+              <div className="space-y-4">
                 <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <span className="text-2xl">📍</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Our Office</h3>
-                    <p className="text-gray-600">
-                      123 Nehru Naga<br />
-                      Coimbatore, Tamil Nadu 600001<br />
-                      India
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <span className="text-2xl">📧</span>
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <span className="text-xl sm:text-2xl">📧</span>
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Email Us</h3>
@@ -171,10 +135,9 @@ export default function ContactUs() {
                     </p>
                   </div>
                 </div>
-
                 <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <span className="text-2xl">📞</span>
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <span className="text-xl sm:text-2xl">📞</span>
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Call Us</h3>
@@ -188,12 +151,10 @@ export default function ContactUs() {
                 </div>
               </div>
             </div>
-
             {/* Quick Actions */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20">
-              <h2 className="text-2xl font-bold text-blue-700 mb-6">Quick Actions</h2>
-              
-              <div className="space-y-4">
+            <div className="bg-white/80 rounded-2xl shadow-xl p-4 sm:p-8 border border-white/20">
+              <h2 className="text-lg sm:text-2xl font-bold text-blue-700 mb-4">Quick Actions</h2>
+              <div className="space-y-3 sm:space-y-4">
                 <button
                   onClick={() => navigate("/booking")}
                   className="w-full bg-yellow-400 text-gray-900 py-3 rounded-xl font-semibold shadow-lg hover:bg-yellow-500 transition-all duration-200 transform hover:scale-[1.02]"
@@ -208,9 +169,8 @@ export default function ContactUs() {
                 </button>
               </div>
             </div>
-
             {/* FAQ Link */}
-            <div className="bg-blue-50 rounded-2xl p-6 border border-blue-200">
+            <div className="bg-blue-50 rounded-2xl p-4 sm:p-6 border border-blue-200">
               <h3 className="font-semibold text-blue-700 mb-2">Need Quick Help?</h3>
               <p className="text-blue-600 text-sm mb-3">
                 Check out our frequently asked questions for instant answers.

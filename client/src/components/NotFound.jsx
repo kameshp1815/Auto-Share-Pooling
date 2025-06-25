@@ -6,7 +6,7 @@ export default function NotFound() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen w-full bg-gradient-to-br from-yellow-100 via-white to-blue-100 px-2 sm:px-4">
+    <div className="flex flex-col items-center justify-center min-h-screen w-full bg-gradient-to-br from-yellow-100 via-white to-blue-100 px-2 sm:px-4 py-6">
       {/* App Name */}
       <div className="text-2xl sm:text-3xl font-extrabold text-blue-700 mb-4 tracking-tight text-center w-full">AutoShare</div>
       {/* Illustration: Road, Auto, Crash */}
@@ -24,7 +24,7 @@ export default function NotFound() {
         <img
           src={autoImg}
           alt="Auto Accident"
-          className="w-24 sm:w-28 h-16 sm:h-20 object-contain absolute left-1/2 top-2 -translate-x-1/2 rotate-[-30deg] drop-shadow-lg animate-auto-slide-shake"
+          className="w-20 sm:w-24 h-14 sm:h-16 object-contain absolute left-1/2 top-2 -translate-x-1/2 rotate-[-30deg] drop-shadow-lg animate-auto-slide-shake"
           style={{ zIndex: 2 }}
         />
         {/* Crash Effect (cartoon bang/star) - animated */}
@@ -33,9 +33,9 @@ export default function NotFound() {
         </svg>
       </div>
       {/* 404 and Button */}
-      <div className="text-4xl sm:text-5xl font-extrabold text-yellow-400 mb-2 tracking-tight text-center w-full">404</div>
+      <div className="text-3xl sm:text-4xl font-extrabold text-yellow-400 mb-2 tracking-tight text-center w-full">404</div>
       <button
-        className="bg-blue-500 text-white py-3 px-8 rounded-lg font-bold shadow-md hover:bg-blue-600 transition-all text-lg w-full max-w-xs mx-auto"
+        className="w-full max-w-xs bg-blue-500 text-white py-3 px-8 rounded-lg font-bold shadow-md hover:bg-blue-600 transition-all text-lg mx-auto"
         onClick={() => navigate(token ? "/dashboard" : "/login")}
       >
         {token ? "Go to Dashboard" : "Go to Login"}

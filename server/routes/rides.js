@@ -1,5 +1,6 @@
 const express = require('express');
 const Ride = require('../models/Ride');
+const User = require('../models/User');
 const router = express.Router();
 
 // Book a new ride
@@ -11,6 +12,9 @@ router.post('/book', async (req, res) => {
     if (!email || !from || !to) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
+    // Fetch user phone
+    const user = await User.findOne({ email });
+    const userPhone = user ? user.phone : '';
     const ride = new Ride({
       email,
       from,
@@ -21,10 +25,11 @@ router.post('/book', async (req, res) => {
       status: 'Ongoing',
       startedAt: new Date(),
       driver: '',
-      completedAt: null
+      completedAt: null,
+      userPhone
     });
     await ride.save();
-    res.json({ message: 'Ride booked successfully!' });
+    res.json({ message: 'Ride booked successfully!', rideId: ride._id });
   } catch (err) {
     console.error('Error in /book:', err);
     res.status(500).json({ message: 'Server error' });
@@ -57,12 +62,8 @@ router.get('/ongoing/:email', async (req, res) => {
 
 // Get all available rides (not assigned to any driver and not completed)
 router.get('/available', async (req, res) => {
-  try {
-    const rides = await Ride.find({ driver: '', status: { $ne: 'Completed' } }).sort({ startedAt: 1 });
-    res.json(rides);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
+  const rides = await Ride.find({ driver: '' });
+  res.json(rides);
 });
 
 // Accept a ride (assign to driver)

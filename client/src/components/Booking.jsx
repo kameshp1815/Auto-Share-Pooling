@@ -1,7 +1,8 @@
 // Requires: npm install react-icons axios
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { FaMapMarkerAlt, FaExchangeAlt, FaHome, FaBriefcase, FaMotorcycle, FaCarSide, FaTaxi } from "react-icons/fa";
+import { FaMapMarkerAlt, FaExchangeAlt, FaHome, FaBriefcase, FaMotorcycle, FaCarSide, FaTaxi, FaCreditCard, FaSpinner, FaMoneyBillWave, FaWallet, FaMobileAlt, FaTimes } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
 
 
 const LOCATIONIQ_API_KEY = import.meta.env.VITE_LOCATIONIQ_API_KEY;
@@ -22,6 +23,13 @@ export default function Booking() {
   const [lastFrom, setLastFrom] = useState("");
   const [lastTo, setLastTo] = useState("");
   const [lastDistance, setLastDistance] = useState(null);
+  const [rideId, setRideId] = useState(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('online'); // 'online' or 'cash'
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('upi');
+  const navigate = useNavigate();
 
   // Get user email from JWT token
   const token = localStorage.getItem("token");
@@ -195,64 +203,65 @@ export default function Booking() {
       if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
       debounceTimeout.current = setTimeout(async () => {
         await calculateDistanceAndFare(from, to);
-      }, 800);
+      }, 1000);
     }
-    return () => clearTimeout(debounceTimeout.current);
-  // eslint-disable-next-line
-  }, [from, to]);
+    return () => {
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    };
+  }, [from, to, lastFrom, lastTo]);
 
-  // When vehicle changes, just recalculate fare if lastDistance is available
-  useEffect(() => {
-    if (lastDistance && from === lastFrom && to === lastTo) {
-      const calculatedFare = calculateFare(lastDistance, vehicle);
-      setFare(`₹${calculatedFare}`);
-    }
-  // eslint-disable-next-line
-  }, [vehicle]);
-
-  // Debounce fetchSuggestions for autocomplete
-  const suggestionDebounceTimeout = useRef();
+  // Fetch location suggestions
   const fetchSuggestions = async (value, setSuggestions) => {
-    if (suggestionDebounceTimeout.current) clearTimeout(suggestionDebounceTimeout.current);
-    suggestionDebounceTimeout.current = setTimeout(async () => {
-      if (!value || value.length < 2) {
-        setSuggestions([]);
-        return;
-      }
-      try {
-        const res = await axios.get(
-          "https://us1.locationiq.com/v1/autocomplete",
-          {
-            params: {
-              key: LOCATIONIQ_API_KEY,
-              q: value,
-              countrycodes: "in",
-              limit: 10,
-              format: "json"
-            }
-          }
+    if (!value || value.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+    try {
+      const res = await axios.get(
+        "https://us1.locationiq.com/v1/autocomplete",
+        {
+          params: {
+            key: LOCATIONIQ_API_KEY,
+            q: value,
+            countrycodes: "in",
+            limit: 5,
+            format: "json"
+          },
+          timeout: 10000
+        }
+      );
+      if (res.data && Array.isArray(res.data)) {
+        let filtered = res.data.filter(place => 
+          place.display_name && place.display_name.includes("Tamil Nadu")
         );
-        if (res.data && Array.isArray(res.data)) {
-          let filtered = res.data.filter(place => 
-            place.display_name && place.display_name.includes("Tamil Nadu")
+        if (filtered.length === 0) {
+          filtered = res.data.filter(place => 
+            place.display_name && place.display_name.includes("India")
           );
-          if (filtered.length === 0) {
-            filtered = res.data.filter(place => 
-              place.display_name && place.display_name.includes("India")
-            );
-          }
-          if (filtered.length === 0) {
-            filtered = res.data;
-          }
-          const suggestions = filtered.map(place => place.display_name);
-          setSuggestions(suggestions);
-        } else {
-          setSuggestions([]);
         }
-      } catch (err) {
-        if (err.response?.status === 429) {
-          setMessage("⚠️ Rate limit exceeded for LocationIQ autocomplete. Please wait and try again.");
+        if (filtered.length === 0) {
+          filtered = res.data;
         }
+        const suggestions = filtered.map(place => place.display_name);
+        setSuggestions(suggestions);
+      } else {
+        setSuggestions([]);
+      }
+    } catch (err) {
+      if (err.response?.status === 429) {
+        setMessage("⚠️ Rate limit exceeded. Please wait a moment before typing again.");
+        // Use fallback suggestions immediately
+        const fallbackSuggestions = [
+          "Chennai, Tamil Nadu, India",
+          "Coimbatore, Tamil Nadu, India", 
+          "Madurai, Tamil Nadu, India",
+          "Salem, Tamil Nadu, India",
+          "Tiruchirappalli, Tamil Nadu, India"
+        ].filter(s => s.toLowerCase().includes(value.toLowerCase()));
+        setSuggestions(fallbackSuggestions);
+      } else {
+        console.error("LocationIQ search error:", err);
+        // Use fallback suggestions for any error
         const fallbackSuggestions = [
           "Chennai, Tamil Nadu, India",
           "Coimbatore, Tamil Nadu, India", 
@@ -262,31 +271,45 @@ export default function Booking() {
         ].filter(s => s.toLowerCase().includes(value.toLowerCase()));
         setSuggestions(fallbackSuggestions);
       }
-    }, 800); // 800ms debounce
+    }
   };
+
+  const suggestionDebounceTimeout = useRef();
 
   const handleFromInputChange = (e) => {
     const value = e.target.value;
     setFrom(value);
-    fetchSuggestions(value, setFromSuggestions);
+    // Add debouncing to reduce API calls
+    if (suggestionDebounceTimeout.current) clearTimeout(suggestionDebounceTimeout.current);
+    suggestionDebounceTimeout.current = setTimeout(() => {
+      fetchSuggestions(value, setFromSuggestions);
+    }, 800); // 800ms debounce
   };
 
   const handleToInputChange = (e) => {
     const value = e.target.value;
     setTo(value);
-    fetchSuggestions(value, setToSuggestions);
+    // Add debouncing to reduce API calls
+    if (suggestionDebounceTimeout.current) clearTimeout(suggestionDebounceTimeout.current);
+    suggestionDebounceTimeout.current = setTimeout(() => {
+      fetchSuggestions(value, setToSuggestions);
+    }, 800); // 800ms debounce
   };
 
   const handleFromSuggestionClick = (suggestion) => {
     setFrom(suggestion);
     setFromSuggestions([]);
     setFromFocused(false);
+    // Clear debounce timeout
+    if (suggestionDebounceTimeout.current) clearTimeout(suggestionDebounceTimeout.current);
   };
 
   const handleToSuggestionClick = (suggestion) => {
     setTo(suggestion);
     setToSuggestions([]);
     setToFocused(false);
+    // Clear debounce timeout
+    if (suggestionDebounceTimeout.current) clearTimeout(suggestionDebounceTimeout.current);
   };
 
   const handleSubmit = async (e) => {
@@ -309,10 +332,10 @@ export default function Booking() {
       const res = await fetch("/api/rides/book", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          email: userEmail, 
-          from, 
-          to, 
+        body: JSON.stringify({
+          email: userEmail,
+          from,
+          to,
           vehicle,
           fare: fare.replace('₹', ''),
           distance: distance ? distance.toFixed(1) : null
@@ -320,11 +343,12 @@ export default function Booking() {
       });
       
       if (res.ok) {
+        const data = await res.json();
         setMessage("Ride booked successfully!");
         setFrom("");
         setTo("");
-        setFare(null);
-        setDistance(null);
+        setRideId(data.rideId || null);
+        setPaymentStatus('pending');
       } else {
         const errorData = await res.json();
         setMessage(errorData.message || "Failed to book ride.");
@@ -335,6 +359,135 @@ export default function Booking() {
     }
     
     setLoading(false);
+  };
+
+  // Enhanced Razorpay payment handler
+  const handlePayNow = async () => {
+    if (!fare || !rideId) {
+      setMessage("❌ Please book a ride first before making payment");
+      return;
+    }
+
+    setPaymentLoading(true);
+    setMessage("");
+
+    try {
+      // Create payment order
+      const orderRes = await fetch('/api/payment/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          amount: parseInt(fare.replace('₹', '')), 
+          receipt: rideId 
+        })
+      });
+
+      if (!orderRes.ok) {
+        const errorData = await orderRes.json();
+        throw new Error(errorData.message || 'Failed to create payment order');
+      }
+
+      const order = await orderRes.json();
+      
+      if (!order.id) {
+        throw new Error('Invalid payment order response');
+      }
+
+      // Configure Razorpay options
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'AutoSharePolling',
+        description: `Ride from ${from} to ${to}`,
+        order_id: order.id,
+        handler: async function (response) {
+          try {
+            setMessage("🔍 Verifying payment...");
+            
+            // Verify payment
+            const verifyRes = await fetch('/api/payment/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                paymentId: response.razorpay_payment_id,
+                orderId: response.razorpay_order_id,
+                signature: response.razorpay_signature,
+                rideId: rideId
+              })
+            });
+
+            if (verifyRes.ok) {
+              setPaymentStatus('paid');
+              setMessage("✅ Payment successful! Your ride is confirmed.");
+            } else {
+              const errorData = await verifyRes.json();
+              setMessage(`❌ Payment verification failed: ${errorData.message}`);
+              setPaymentStatus('failed');
+            }
+          } catch (error) {
+            setMessage(`❌ Payment verification error: ${error.message}`);
+            setPaymentStatus('failed');
+          }
+        },
+        prefill: { 
+          email: userEmail,
+          name: userEmail.split('@')[0] // Use email prefix as name
+        },
+        theme: { 
+          color: '#facc15',
+          backdrop_color: '#fef3c7'
+        },
+        modal: {
+          ondismiss: function() {
+            setPaymentLoading(false);
+            setMessage("Payment cancelled. You can try again.");
+          }
+        }
+      };
+
+      // Initialize and open Razorpay
+      if (window.Razorpay) {
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+      } else {
+        throw new Error('Razorpay SDK not loaded');
+      }
+
+    } catch (err) {
+      console.error('Payment error:', err);
+      setMessage(`❌ Payment error: ${err.message}`);
+      setPaymentStatus('failed');
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  // Handle payment based on selected method
+  const handleProceedPayment = async () => {
+    setShowPaymentModal(false);
+    if (selectedPaymentMethod === 'cash') {
+      setPaymentStatus('cash');
+      setMessage(
+        <span>
+          <span role="img" aria-label="ok">👌</span> <span className="font-bold text-green-700">Okey, done!</span><br/>
+          <span className="text-yellow-700 font-semibold">Have a safe journey! 🚕✨</span>
+        </span>
+      );
+    } else {
+      await handlePayNow();
+    }
+  };
+
+  // Payment method options (only Cash and UPI)
+  const paymentOptions = [
+    { key: 'upi', label: 'UPI (Razorpay)', icon: <FaMobileAlt className="text-2xl text-blue-500" /> },
+    { key: 'cash', label: 'Cash', icon: <FaMoneyBillWave className="text-2xl text-yellow-600" /> },
+  ];
+
+  // Show modal on Pay Now click
+  const handleShowPaymentModal = () => {
+    setShowPaymentModal(true);
   };
 
   return (
@@ -356,6 +509,41 @@ export default function Booking() {
           </div>
         </div>
       </div>
+
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md relative animate-fade-in">
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
+              onClick={() => setShowPaymentModal(false)}
+              aria-label="Close"
+            >
+              <FaTimes />
+            </button>
+            <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">Choose Payment Method</h2>
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              {paymentOptions.map(opt => (
+                <button
+                  key={opt.key}
+                  className={`flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all duration-200 shadow hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-lg font-semibold gap-2
+                    ${selectedPaymentMethod === opt.key ? 'border-yellow-400 bg-yellow-50/80 scale-105 shadow-lg' : 'border-gray-200 bg-white/40 hover:border-yellow-300'}`}
+                  onClick={() => setSelectedPaymentMethod(opt.key)}
+                >
+                  {opt.icon}
+                  <span>{opt.label}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              className="w-full py-3 rounded-2xl text-lg font-bold shadow-lg bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-400 transition-all duration-200"
+              onClick={handleProceedPayment}
+            >
+              Proceed to Pay
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Content: Booking Form Only */}
       <form onSubmit={handleSubmit} className="w-full max-w-md flex-1 flex flex-col px-2 py-6">
@@ -519,15 +707,27 @@ export default function Booking() {
             </div>
           )}
 
+          {/* Payment Method Selection and Pay Button */}
+          {rideId && fare && (
+            <>
+              <button
+                type="button"
+                onClick={handleShowPaymentModal}
+                disabled={paymentLoading}
+                className={`w-full mb-6 py-3 rounded-2xl text-lg font-bold shadow-lg transition-all duration-200 ${
+                  paymentLoading
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : 'bg-green-500 hover:bg-green-600 text-white'
+                }`}
+              >
+                {paymentLoading ? 'Processing Payment...' : 'Pay Now'}
+              </button>
+            </>
+          )}
+
           {/* Message */}
           {message && (
-            <div className={`mt-2 p-3 rounded-xl text-center font-medium shadow border backdrop-blur-md ${
-              message.includes('success')
-                ? 'bg-green-100 text-green-700 border-green-200'
-                : message.includes('estimated') || message.includes('API connection failed')
-                  ? 'bg-yellow-100 text-yellow-700 border-yellow-200'
-                  : 'bg-red-100 text-red-700 border-red-200'
-            }`}>
+            <div className="mt-2 p-3 rounded-xl text-center font-medium shadow border backdrop-blur-md bg-yellow-100 text-yellow-700 border-yellow-200">
               {message}
             </div>
           )}

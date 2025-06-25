@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaCircle } from "react-icons/fa";
 
 export default function DriverDashboard() {
+  const navigate = useNavigate();
   const [driverEmail, setDriverEmail] = useState(localStorage.getItem("driverEmail") || "");
   const [inputEmail, setInputEmail] = useState("");
   const [availableRides, setAvailableRides] = useState([]);
@@ -65,6 +68,7 @@ export default function DriverDashboard() {
     setAvailableRides([]);
     setMyRides([]);
     setMessage("");
+    navigate("/login");
   };
 
   const handleAccept = async (rideId) => {
@@ -154,29 +158,29 @@ export default function DriverDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-100 via-yellow-100 to-blue-100 px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-100 via-yellow-100 to-blue-100 px-2 sm:px-4 py-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-white/20 mb-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-6 border border-white/20 mb-6 sm:mb-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4">
             <div>
-              <h1 className="text-3xl font-extrabold text-green-700 tracking-tight mb-2">Driver Dashboard</h1>
-              <p className="text-gray-600">Manage your rides and accept new bookings</p>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-green-700 tracking-tight mb-1 sm:mb-2">Driver Dashboard</h1>
+              <p className="text-gray-600 text-sm sm:text-base">Manage your rides and accept new bookings</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <div className="text-right">
-                <div className="text-sm text-gray-600">Logged in as:</div>
-                <div className="font-semibold text-green-700">{driverEmail}</div>
+                <div className="text-xs sm:text-sm text-gray-600">Logged in as:</div>
+                <div className="font-semibold text-green-700 text-sm sm:text-base">{driverEmail}</div>
               </div>
               <button 
-                className="bg-blue-500 text-white px-4 py-2 rounded-xl font-semibold shadow-lg hover:bg-blue-600 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50"
+                className="bg-blue-500 text-white px-3 sm:px-4 py-2 rounded-xl font-semibold shadow-lg hover:bg-blue-600 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 text-sm sm:text-base"
                 onClick={handleRefresh}
                 disabled={loadingAvailable || loadingMyRides}
               >
                 {loadingAvailable || loadingMyRides ? '🔄 Loading...' : '🔄 Refresh'}
               </button>
               <button 
-                className="bg-red-500 text-white px-4 py-2 rounded-xl font-semibold shadow-lg hover:bg-red-600 transition-all duration-200 transform hover:scale-[1.02]"
+                className="bg-red-500 text-white px-3 sm:px-4 py-2 rounded-xl font-semibold shadow-lg hover:bg-red-600 transition-all duration-200 transform hover:scale-[1.02] text-sm sm:text-base"
                 onClick={handleLogout}
               >
                 Logout
@@ -196,7 +200,6 @@ export default function DriverDashboard() {
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-white/20">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-yellow-700">Available Rides</h2>
-              <div className="text-sm text-gray-500">{availableRides.length} rides</div>
             </div>
             
             {loadingAvailable ? (
@@ -215,20 +218,27 @@ export default function DriverDashboard() {
                   <div key={ride._id || idx} className="bg-white/60 rounded-xl p-4 border border-yellow-200 hover:shadow-md transition-all">
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
-                        <div className="font-semibold text-gray-800 mb-1">
-                          {ride.from} → {ride.to}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {ride.vehicle} • {ride.distance} km • {ride.fare}
+                        <div className="text-sm text-gray-600 mb-2">{ride.vehicle} • {ride.distance} km • {ride.fare}</div>
+                        <div className="mt-2">
+                          <div className="flex items-start gap-2 mb-1">
+                            <span className="mt-1"><FaCircle className="text-green-500 text-xs" /></span>
+                            <span className="text-[15px] font-medium text-gray-900 leading-tight whitespace-pre-line">{ride.from}</span>
+                          </div>
+                          <div className="flex items-start gap-2 mt-1">
+                            <span className="mt-1"><FaCircle className="text-red-500 text-xs" /></span>
+                            <span className="text-[15px] font-medium text-gray-900 leading-tight whitespace-pre-line">{ride.to}</span>
+                          </div>
                         </div>
                       </div>
-                      <button
-                        className="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold shadow-lg hover:bg-green-600 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50"
-                        onClick={() => handleAccept(ride._id)}
-                        disabled={loadingAvailable || loadingMyRides}
-                      >
-                        Accept
-                      </button>
+                      <div className="flex flex-col gap-2 items-end">
+                        <button
+                          className="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold shadow-lg hover:bg-green-600 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50"
+                          onClick={() => handleAccept(ride._id)}
+                          disabled={loadingAvailable || loadingMyRides}
+                        >
+                          Accept
+                        </button>
+                      </div>
                     </div>
                     <div className="text-xs text-gray-400">
                       {ride.startedAt ? new Date(ride.startedAt).toLocaleString() : 'N/A'}

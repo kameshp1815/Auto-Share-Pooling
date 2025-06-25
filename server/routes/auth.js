@@ -7,12 +7,18 @@ const router = express.Router();
 
 // Register
 router.post('/register', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, phone } = req.body;
+  if (!email || !password || !phone) {
+    return res.status(400).json({ message: 'Email, password, and phone are required.' });
+  }
+  if (!/^\d{10}$/.test(phone)) {
+    return res.status(400).json({ message: 'Invalid phone number.' });
+  }
   try {
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: 'Email already registered' });
     const hashed = await bcrypt.hash(password, 10);
-    const user = new User({ email, password: hashed });
+    const user = new User({ email, password: hashed, phone });
     await user.save();
     res.status(201).json({ message: 'User registered' });
   } catch (err) {
