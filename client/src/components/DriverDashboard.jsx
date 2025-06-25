@@ -62,14 +62,7 @@ export default function DriverDashboard() {
     setMessage("");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("driverEmail");
-    setDriverEmail("");
-    setAvailableRides([]);
-    setMyRides([]);
-    setMessage("");
-    navigate("/login");
-  };
+  
 
   const handleAccept = async (rideId) => {
     setLoadingAvailable(true);
@@ -179,12 +172,7 @@ export default function DriverDashboard() {
               >
                 {loadingAvailable || loadingMyRides ? '🔄 Loading...' : '🔄 Refresh'}
               </button>
-              <button 
-                className="bg-red-500 text-white px-3 sm:px-4 py-2 rounded-xl font-semibold shadow-lg hover:bg-red-600 transition-all duration-200 transform hover:scale-[1.02] text-sm sm:text-base"
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
+              
             </div>
           </div>
         </div>
@@ -272,10 +260,17 @@ export default function DriverDashboard() {
                   <div key={ride._id || idx} className="bg-white/60 rounded-xl p-4 border border-blue-200 hover:shadow-md transition-all">
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
-                        <div className="font-semibold text-gray-800 mb-1">
-                          {ride.from} → {ride.to}
+                        <div className="mt-2">
+                          <div className="flex items-start gap-2 mb-1">
+                            <span className="mt-1"><FaCircle className="text-green-500 text-xs" /></span>
+                            <span className="text-[15px] font-medium text-gray-900 leading-tight whitespace-pre-line">{ride.from}</span>
+                          </div>
+                          <div className="flex items-start gap-2 mt-1">
+                            <span className="mt-1"><FaCircle className="text-red-500 text-xs" /></span>
+                            <span className="text-[15px] font-medium text-gray-900 leading-tight whitespace-pre-line">{ride.to}</span>
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-gray-600 mt-2">
                           {ride.vehicle} • {ride.distance} km • ₹{ride.fare}
                         </div>
                       </div>
