@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const rideRoutes = require('./routes/rides');
+const googleAuthRoute = require('./routes/googleAuth');
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -30,6 +31,7 @@ try {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/rides', rideRoutes);
+app.use('/api/auth', googleAuthRoute);
 
 // Root route for server status
 app.get('/', (req, res) => {

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import autoLogo from "../assets/auto.png";
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -59,6 +60,35 @@ export default function Login({ onLogin }) {
             Login
           </button>
         </form>
+        <div className="flex items-center my-4">
+          <div className="flex-grow border-t border-gray-300"></div>
+          <span className="mx-2 text-gray-400">or</span>
+          <div className="flex-grow border-t border-gray-300"></div>
+        </div>
+        <div className="mt-4 flex flex-col items-center">
+          <GoogleLogin
+            onSuccess={credentialResponse => {
+              fetch("http://localhost:5000/api/auth/google", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token: credentialResponse.credential }),
+              })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.token) {
+                    localStorage.setItem("token", data.token);
+                    onLogin && onLogin(data.token);
+                    navigate("/dashboard");
+                  } else {
+                    setError(data.message || "Google login failed");
+                  }
+                });
+            }}
+            onError={() => {
+              setError("Google login failed");
+            }}
+          />
+        </div>
         <div className="mt-6 text-gray-600 text-sm text-center">
           Don't have an account?{' '}
           <a href="/register" className="text-yellow-600 font-semibold hover:underline">Register</a>
