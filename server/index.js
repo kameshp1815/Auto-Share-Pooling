@@ -7,7 +7,11 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const rideRoutes = require('./routes/rides');
 const googleAuthRoute = require('./routes/googleAuth');
+
 const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
@@ -41,13 +45,12 @@ app.get('/', (req, res) => {
 // Create Razorpay order
 app.post('/api/payment/order', async (req, res) => {
   const { amount, currency = 'INR', receipt } = req.body;
-  
+
   try {
-    // Validate input
     if (!amount || amount <= 0) {
       return res.status(400).json({ message: 'Invalid amount' });
     }
-    
+
     if (!razorpay) {
       return res.status(500).json({ message: 'Payment service not available' });
     }
@@ -58,15 +61,15 @@ app.post('/api/payment/order', async (req, res) => {
       receipt: receipt || `rcpt_${Date.now()}`,
       payment_capture: 1
     };
-    
+
     const order = await razorpay.orders.create(options);
     console.log('Razorpay order created:', order.id);
     res.json(order);
   } catch (err) {
     console.error('Razorpay order creation error:', err);
-    res.status(500).json({ 
-      message: 'Failed to create payment order', 
-      error: err.message 
+    res.status(500).json({
+      message: 'Failed to create payment order',
+      error: err.message
     });
   }
 });
@@ -74,9 +77,8 @@ app.post('/api/payment/order', async (req, res) => {
 // Verify payment and update ride
 app.post('/api/payment/verify', async (req, res) => {
   const { paymentId, orderId, signature, rideId } = req.body;
-  
+
   try {
-    // Validate input
     if (!paymentId || !orderId || !signature || !rideId) {
       return res.status(400).json({ message: 'Missing required payment details' });
     }
@@ -105,13 +107,12 @@ app.post('/api/payment/verify', async (req, res) => {
     const generatedSignature = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
       .update(orderId + '|' + paymentId)
       .digest('hex');
-    
+
     if (generatedSignature !== signature) {
       console.error('Payment signature verification failed');
       return res.status(400).json({ message: 'Payment verification failed' });
     }
 
-    // Update ride as paid
     const Ride = require('./models/Ride');
     const updatedRide = await Ride.findByIdAndUpdate(rideId, {
       paymentStatus: 'paid',
@@ -123,15 +124,15 @@ app.post('/api/payment/verify', async (req, res) => {
     }
 
     console.log('Payment verified and ride updated:', rideId);
-    res.json({ 
+    res.json({
       message: 'Payment verified and ride updated',
       ride: updatedRide
     });
   } catch (err) {
     console.error('Payment verification error:', err);
-    res.status(500).json({ 
-      message: 'Failed to verify payment', 
-      error: err.message 
+    res.status(500).json({
+      message: 'Failed to verify payment',
+      error: err.message
     });
   }
 });
@@ -141,22 +142,23 @@ app.get('/api/payment/status/:rideId', async (req, res) => {
   try {
     const Ride = require('./models/Ride');
     const ride = await Ride.findById(req.params.rideId);
-    
+
     if (!ride) {
       return res.status(404).json({ message: 'Ride not found' });
     }
-    
-    res.json({ 
+
+    res.json({
       paymentStatus: ride.paymentStatus,
       paymentId: ride.paymentId
     });
   } catch (err) {
     console.error('Payment status check error:', err);
-    res.status(500).json({ 
-      message: 'Failed to check payment status', 
-      error: err.message 
+    res.status(500).json({
+      message: 'Failed to check payment status',
+      error: err.message
     });
   }
 });
 
-app.listen(5000,'0.0.0.0', () => console.log('Server running on port 5000'));
+// Start the server (corrected line)
+app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
