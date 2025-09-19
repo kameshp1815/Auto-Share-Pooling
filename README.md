@@ -88,6 +88,8 @@ A modern MERN stack ride-booking application inspired by Rapido, supporting both
 
 ## 🔑 Environment Variables
 
+
+
 ### Server (`server/.env`)
 - `MONGODB_URI` — Your MongoDB connection string
 - `JWT_SECRET` — Secret for JWT token signing
