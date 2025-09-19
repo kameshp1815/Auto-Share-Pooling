@@ -95,6 +95,8 @@ A modern MERN stack ride-booking application inspired by Rapido, supporting both
 ### Client (`client/.env`)
 - `VITE_LOCATIONIQ_API_KEY` — Your LocationIQ API key
 
+
+
 ---
 
 ## 📦 Folder Structure
