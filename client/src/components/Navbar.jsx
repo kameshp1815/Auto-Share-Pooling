@@ -2,15 +2,22 @@ import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaBars, FaTimes } from "react-icons/fa";
 
-export default function Navbar({ token, setToken }) {
+export default function Navbar({ token, setToken, driverToken, setDriverToken }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    setToken(null);
-    navigate("/login");
+    const isDriverPage = location.pathname.startsWith("/driver");
+    if (isDriverPage) {
+      localStorage.removeItem("driverToken");
+      if (setDriverToken) setDriverToken(null);
+      navigate("/driver-login");
+    } else {
+      localStorage.removeItem("token");
+      setToken(null);
+      navigate("/login");
+    }
     setMenuOpen(false);
   };
 
@@ -26,6 +33,12 @@ export default function Navbar({ token, setToken }) {
     { to: "/login", label: "Login" },
     { to: "/register", label: "Register" },
     { to: "/contact", label: "Contact" },
+  ];
+
+  const driverLinks = [
+    { to: "/driver/dashboard", label: "Dashboard" },
+    { to: "/driver/profile", label: "Profile" },
+    { to: "/driver/earnings", label: "Earnings" },
   ];
 
   return (
@@ -57,6 +70,20 @@ export default function Navbar({ token, setToken }) {
             )}
           </div>
         )}
+        {isDriverPage && (
+          <div className="hidden md:flex flex-row items-center space-x-2 md:space-x-6">
+            {driverLinks.map(link => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="text-green-700 font-medium relative transition-all duration-200 hover:text-green-900 focus:text-green-900 nav-underline px-2 py-1"
+                onClick={() => setMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        )}
         {/* Hamburger for Mobile */}
         {!isDriverPage && (
           <button
@@ -67,8 +94,17 @@ export default function Navbar({ token, setToken }) {
             {menuOpen ? <FaTimes /> : <FaBars />}
           </button>
         )}
-        {/* Driver Logout button (always visible on driver page) */}
-        {isDriverPage && token && (
+        {isDriverPage && (
+          <button
+            className="md:hidden text-2xl text-green-700 focus:outline-none ml-2"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <FaTimes /> : <FaBars />}
+          </button>
+        )}
+        {/* Driver Logout button (visible on driver page when driver is logged in) */}
+        {isDriverPage && driverToken && (
           <button
             onClick={handleLogout}
             className="bg-red-500 text-white px-4 py-2 rounded shadow transition-all duration-200 hover:bg-red-600 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-300 ml-2"
@@ -92,6 +128,30 @@ export default function Navbar({ token, setToken }) {
               </Link>
             ))}
             {token && (
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300"
+              >
+                Logout
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+      {isDriverPage && menuOpen && (
+        <div className="md:hidden bg-white/95 shadow-lg border-b border-white/30 animate-fade-in px-4 py-4">
+          <div className="flex flex-col space-y-4">
+            {driverLinks.map(link => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="text-green-800 font-semibold text-lg px-2 py-2 rounded hover:bg-green-100 transition-all"
+                onClick={() => setMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
+            {driverToken && (
               <button
                 onClick={handleLogout}
                 className="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300"

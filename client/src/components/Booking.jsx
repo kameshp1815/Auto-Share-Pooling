@@ -315,16 +315,16 @@ export default function Booking() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!from || !to) {
-      setMessage("Please enter both pickup and drop locations.");
+    if (!userEmail || !from || !to) {
+      setMessage("Please fill in all required fields (pickup, drop, and login).");
       return;
     }
-    
     if (!fare) {
       setMessage("Please wait for fare calculation to complete.");
       return;
     }
-    
+    // Debug log for booking parameters
+    console.log({ userEmail, from, to, vehicle, fare, distance });
     setLoading(true);
     setMessage("");
     

@@ -1,39 +1,42 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import autoLogo from "../assets/auto.png";
-import { GoogleLogin } from '@react-oauth/google';
+import { useNavigate } from "react-router-dom";
+import driverimage from "../assets/driver.png";
 
-export default function Login({ onLogin }) {
+export default function DriverLogin({ setDriverToken }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    const response = await fetch("/api/auth/login", {
+    const response = await fetch("/api/auth/driver-login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
     const data = await response.json();
     if (response.ok) {
-      localStorage.setItem("token", data.token);
-      onLogin && onLogin(data.token);
-      navigate("/dashboard");
+      localStorage.setItem("driverToken", data.token);
+      setDriverToken(data.token);
+      setError("");
+      setMessage("Login successful! Redirecting to dashboard...");
+      setTimeout(() => navigate("/driver/dashboard"), 1200);
     } else {
-      setError(data.message);
+      setError(data.message || "Login failed");
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-yellow-100 via-white to-blue-100 px-2 sm:px-4 py-6">
       <div className="w-full max-w-md bg-white/90 rounded-2xl shadow-2xl p-4 sm:p-8 border border-yellow-100/60">
-        <img src={autoLogo} alt="Login Logo" className="w-16 h-16 sm:w-20 sm:h-20 mb-4 drop-shadow-lg rounded-full border-4 border-yellow-300 bg-white mx-auto" />
-        <h2 className="text-2xl sm:text-3xl font-extrabold mb-2 text-yellow-700 tracking-tight text-center">Login</h2>
+        <img src={driverimage} alt="Driver Login Logo" className="w-16 h-16 sm:w-20 sm:h-20 mb-4 drop-shadow-lg rounded-full border-4 border-yellow-300 bg-white mx-auto" />
+        <h2 className="text-2xl sm:text-3xl font-extrabold mb-2 text-yellow-700 tracking-tight text-center">Driver Login</h2>
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4 sm:gap-5">
           {error && <div className="mb-2 text-red-500 text-center font-medium bg-red-50 border border-red-200 rounded-lg py-2">{error}</div>}
+          {message && <div className="mb-2 text-green-600 text-center font-medium bg-green-50 border border-green-200 rounded-lg py-2">{message}</div>}
           <div className="flex flex-col gap-2">
             <label className="text-sm font-semibold text-gray-700 mb-1">Email</label>
             <input
@@ -60,40 +63,11 @@ export default function Login({ onLogin }) {
             Login
           </button>
         </form>
-        <div className="flex items-center my-4">
-          <div className="flex-grow border-t border-gray-300"></div>
-          <span className="mx-2 text-gray-400">or</span>
-          <div className="flex-grow border-t border-gray-300"></div>
-        </div>
-        <div className="mt-4 flex flex-col items-center">
-          <GoogleLogin
-            onSuccess={credentialResponse => {
-              fetch("http://localhost:5000/api/auth/google", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token: credentialResponse.credential }),
-              })
-                .then(res => res.json())
-                .then(data => {
-                  if (data.token) {
-                    localStorage.setItem("token", data.token);
-                    onLogin && onLogin(data.token);
-                    navigate("/dashboard");
-                  } else {
-                    setError(data.message || "Google login failed");
-                  }
-                });
-            }}
-            onError={() => {
-              setError("Google login failed");
-            }}
-          />
-        </div>
         <div className="mt-6 text-gray-600 text-sm text-center">
           Don't have an account?{' '}
-          <a href="/register" className="text-yellow-600 font-semibold hover:underline">Register</a>
+          <a href="/driver-register" className="text-yellow-600 font-semibold hover:underline">Register as Driver</a>
         </div>
       </div>
     </div>
   );
-}
+} 

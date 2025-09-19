@@ -7,13 +7,20 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const rideRoutes = require('./routes/rides');
 const googleAuthRoute = require('./routes/googleAuth');
+const driverRoutes = require('./routes/driver');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const http = require('http').createServer(app);
+const { Server } = require('socket.io');
+const io = new Server(http, {
+  cors: { origin: '*'}
+});
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));
 
 // Connect to MongoDB Atlas
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -36,6 +43,7 @@ try {
 app.use('/api/auth', authRoutes);
 app.use('/api/rides', rideRoutes);
 app.use('/api/auth', googleAuthRoute);
+app.use('/api/driver', driverRoutes);
 
 // Root route for server status
 app.get('/', (req, res) => {
@@ -160,5 +168,44 @@ app.get('/api/payment/status/:rideId', async (req, res) => {
   }
 });
 
-// Start the server (corrected line)
-app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+// Socket.IO: track online drivers
+const onlineDriverEmailToSocketId = new Map();
+
+io.on('connection', (socket) => {
+  socket.on('driver:online', ({ email }) => {
+    if (!email) return;
+    onlineDriverEmailToSocketId.set(email.toLowerCase(), socket.id);
+  });
+
+  socket.on('driver:offline', ({ email }) => {
+    if (!email) return;
+    onlineDriverEmailToSocketId.delete(email.toLowerCase());
+  });
+
+  socket.on('disconnect', () => {
+    for (const [email, id] of onlineDriverEmailToSocketId.entries()) {
+      if (id === socket.id) onlineDriverEmailToSocketId.delete(email);
+    }
+  });
+});
+
+// Helper to emit a ride request to a specific driver by email
+async function emitRideRequestToDriver(driverEmail, ride) {
+  const sid = onlineDriverEmailToSocketId.get((driverEmail || '').toLowerCase());
+  if (sid) {
+    io.to(sid).emit('ride:request', {
+      rideId: ride._id,
+      pickup: ride.from,
+      dropoff: ride.to,
+      price: ride.fare,
+      distance: ride.distance,
+      vehicle: ride.vehicle,
+      timeLimit: 15000
+    });
+  }
+}
+
+module.exports.emitRideRequestToDriver = emitRideRequestToDriver;
+
+// Start the server on HTTP server
+http.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));

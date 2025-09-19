@@ -8,11 +8,16 @@ const rideSchema = new mongoose.Schema({
   fare: { type: String, default: '' },
   distance: { type: String, default: '' },
   status: { type: String, default: 'Ongoing' },
-  startedAt: { type: Date, default: Date.now },
+  requestedAt: { type: Date, default: Date.now },
+  acceptedAt: { type: Date, default: null },
+  arrivedAt: { type: Date, default: null },
+  startedAt: { type: Date, default: null },
   driver: { type: String, default: '' },
   completedAt: { type: Date, default: null },
+  cancelledAt: { type: Date, default: null },
   paymentStatus: { type: String, default: 'pending' },
   paymentId: { type: String, default: '' },
+  paymentMethod: { type: String, enum: ['cash', 'online', ''], default: '' },
   userPhone: { type: String, default: '' }
 });
 
