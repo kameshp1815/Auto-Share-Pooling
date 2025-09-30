@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaCircle } from "react-icons/fa";
+import { FaCircle, FaUser, FaPhone, FaCar, FaIdCard } from "react-icons/fa";
 
 export default function Profile() {
   const token = localStorage.getItem("token");
@@ -156,23 +156,59 @@ export default function Profile() {
                     <div className="space-y-4">
                       {paginatedRides.map((ride, idx) => (
                         <div key={idx} className="bg-white rounded-2xl shadow border border-gray-100 p-4">
-                          <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center justify-between mb-3">
                             <span className="font-semibold text-gray-700 capitalize">{ride.vehicle || 'Ride'}</span>
-                            <span className="text-gray-500 text-sm">{ride.dateTime ? ride.dateTime : ''}</span>
+                            <span className="text-gray-500 text-sm">{ride.requestedAt ? new Date(ride.requestedAt).toLocaleString() : ''}</span>
                             <span className="font-bold text-gray-800">{ride.fare ? `₹${ride.fare}` : '₹0'}</span>
                           </div>
-                          <div className="mb-1">
-                            <span className={`font-semibold text-sm ${ride.status === 'Cancelled' ? 'text-red-500' : ride.status === 'Completed' ? 'text-green-600' : 'text-yellow-600'}`}>{ride.status || ride.paymentStatus}</span>
+                          <div className="mb-3">
+                            <span className={`font-semibold text-sm px-3 py-1 rounded-full ${ride.status === 'Cancelled' ? 'bg-red-100 text-red-700' : ride.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{ride.status || ride.paymentStatus}</span>
                           </div>
                           <div className="mt-2">
-                            <div className="flex items-start gap-2 mb-1">
+                            <div className="flex items-start gap-2 mb-2">
                               <span className="mt-1"><FaCircle className="text-green-500 text-xs" /></span>
                               <span className="text-[15px] font-medium text-gray-900 leading-tight whitespace-pre-line">{ride.from}</span>
                             </div>
-                            <div className="flex items-start gap-2 mt-1">
+                            <div className="flex items-start gap-2 mb-3">
                               <span className="mt-1"><FaCircle className="text-red-500 text-xs" /></span>
                               <span className="text-[15px] font-medium text-gray-900 leading-tight whitespace-pre-line">{ride.to}</span>
                             </div>
+                            
+                            {/* Driver Details - Only show if ride is accepted and driver details exist */}
+                            {ride.status && ['Accepted', 'Arrived', 'Started', 'Ongoing', 'Completed'].includes(ride.status) && ride.driverDetails && ride.driverDetails.name && (
+                              <div className="mt-4 p-3 bg-blue-50 rounded-xl border border-blue-200">
+                                <h4 className="text-sm font-bold text-blue-800 mb-2 flex items-center gap-2">
+                                  <FaUser className="text-blue-600" />
+                                  Driver Details
+                                </h4>
+                                <div className="space-y-2">
+                                  {ride.driverDetails.name && (
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <FaUser className="text-gray-500 w-4" />
+                                      <span className="text-gray-700 font-medium">{ride.driverDetails.name}</span>
+                                    </div>
+                                  )}
+                                  {ride.driverDetails.phone && (
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <FaPhone className="text-gray-500 w-4" />
+                                      <span className="text-gray-700">{ride.driverDetails.phone}</span>
+                                    </div>
+                                  )}
+                                  {ride.driverDetails.vehicleNumber && (
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <FaIdCard className="text-gray-500 w-4" />
+                                      <span className="text-gray-700 font-mono">{ride.driverDetails.vehicleNumber}</span>
+                                    </div>
+                                  )}
+                                  {ride.driverDetails.vehicleType && (
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <FaCar className="text-gray-500 w-4" />
+                                      <span className="text-gray-700 capitalize">{ride.driverDetails.vehicleType} {ride.driverDetails.vehicleModel && `- ${ride.driverDetails.vehicleModel}`}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}

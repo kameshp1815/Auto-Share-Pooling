@@ -75,12 +75,48 @@ router.post('/accept/:rideId', async (req, res) => {
     if (!ride) return res.status(404).json({ message: 'Ride not found' });
     if (ride.driver) return res.status(400).json({ message: 'Ride already accepted' });
     if (ride.status !== 'Requested') return res.status(400).json({ message: 'Ride not in requested state' });
+    
+    // Fetch driver details
+    const User = require('../models/User');
+    const driverUser = await User.findOne({ email: driver, type: 'driver' });
+    
+    if (!driverUser) {
+      return res.status(404).json({ message: 'Driver not found' });
+    }
+    
+    // Update ride with driver details
     ride.driver = driver;
     ride.status = 'Accepted';
     ride.acceptedAt = new Date();
+    ride.driverDetails = {
+      name: driverUser.name || '',
+      phone: driverUser.phone || '',
+      vehicleNumber: driverUser.vehicleRegNumber || '',
+      vehicleType: driverUser.vehicleType || '',
+      vehicleModel: driverUser.vehicleMakeModel || ''
+    };
+    
     await ride.save();
+    
+    // Emit WebSocket event to notify user about ride acceptance
+    const { emitRideStatusUpdate } = require('..');
+    if (emitRideStatusUpdate) {
+      console.log('Emitting ride status update for user:', ride.email);
+      console.log('Ride details:', {
+        rideId: ride._id,
+        status: ride.status,
+        driverDetails: ride.driverDetails
+      });
+      emitRideStatusUpdate(ride.email, {
+        rideId: ride._id,
+        status: ride.status,
+        driverDetails: ride.driverDetails
+      });
+    }
+    
     res.json({ message: 'Ride accepted', ride });
   } catch (err) {
+    console.error('Error accepting ride:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -109,6 +145,17 @@ router.post('/arrived/:rideId', async (req, res) => {
     ride.status = 'Arrived';
     ride.arrivedAt = new Date();
     await ride.save();
+    
+    // Emit WebSocket event for status update
+    const { emitRideStatusUpdate } = require('..');
+    if (emitRideStatusUpdate) {
+      emitRideStatusUpdate(ride.email, {
+        rideId: ride._id,
+        status: ride.status,
+        driverDetails: ride.driverDetails
+      });
+    }
+    
     res.json({ message: 'Marked as arrived', ride });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -126,6 +173,17 @@ router.post('/start/:rideId', async (req, res) => {
     ride.status = 'Started';
     ride.startedAt = new Date();
     await ride.save();
+    
+    // Emit WebSocket event for status update
+    const { emitRideStatusUpdate } = require('..');
+    if (emitRideStatusUpdate) {
+      emitRideStatusUpdate(ride.email, {
+        rideId: ride._id,
+        status: ride.status,
+        driverDetails: ride.driverDetails
+      });
+    }
+    
     res.json({ message: 'Ride started', ride });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -155,6 +213,17 @@ router.post('/complete/:rideId', async (req, res) => {
     ride.completedAt = new Date();
     ride.paymentMethod = paymentMethod || '';
     await ride.save();
+    
+    // Emit WebSocket event for status update
+    const { emitRideStatusUpdate } = require('..');
+    if (emitRideStatusUpdate) {
+      emitRideStatusUpdate(ride.email, {
+        rideId: ride._id,
+        status: ride.status,
+        driverDetails: ride.driverDetails
+      });
+    }
+    
     res.json({ message: 'Ride marked as completed', ride });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });

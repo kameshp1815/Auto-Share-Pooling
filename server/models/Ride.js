@@ -13,6 +13,13 @@ const rideSchema = new mongoose.Schema({
   arrivedAt: { type: Date, default: null },
   startedAt: { type: Date, default: null },
   driver: { type: String, default: '' },
+  driverDetails: {
+    name: { type: String, default: '' },
+    phone: { type: String, default: '' },
+    vehicleNumber: { type: String, default: '' },
+    vehicleType: { type: String, default: '' },
+    vehicleModel: { type: String, default: '' }
+  },
   completedAt: { type: Date, default: null },
   cancelledAt: { type: Date, default: null },
   paymentStatus: { type: String, default: 'pending' },

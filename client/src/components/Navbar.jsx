@@ -27,6 +27,7 @@ export default function Navbar({ token, setToken, driverToken, setDriverToken })
   const navLinks = token ? [
     { to: "/dashboard", label: "Dashboard" },
     { to: "/booking", label: "Booking" },
+    { to: "/ride-status", label: "Ride Status" },
     { to: "/profile", label: "Profile" },
     { to: "/contact", label: "Contact" },
   ] : [
@@ -45,7 +46,7 @@ export default function Navbar({ token, setToken, driverToken, setDriverToken })
     <nav className="bg-white/60 backdrop-blur-md shadow sticky top-0 z-50 border-b border-white/30">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-2 sm:px-4 py-3">
         <div className={`text-2xl font-bold tracking-wide ${isDriverPage ? 'text-green-700' : 'text-red-600 hover:text-red-700 transition-colors duration-200'}`}>
-          <Link to="/">AutoSharePolling{isDriverPage ? ' Driver' : ''}</Link>
+          <Link to="/">Auto Share Pooling{isDriverPage ? ' Driver' : ''}</Link>
         </div>
         {/* Desktop Links */}
         {!isDriverPage && (

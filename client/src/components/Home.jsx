@@ -22,7 +22,7 @@ export default function Home() {
       </svg>
       <div className="max-w-lg w-full bg-white/95 rounded-2xl shadow-2xl p-8 border border-yellow-100/60 text-center relative z-10">
         <img src={autoLogo} alt="AutoSharePolling Logo" className="w-20 h-20 mx-auto mb-4 drop-shadow-lg rounded-full border-4 border-yellow-300 bg-white" />
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-yellow-700 mb-2 tracking-tight drop-shadow">Welcome to AutoSharePolling</h1>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-yellow-700 mb-2 tracking-tight drop-shadow">Welcome to Auto Share Pooling</h1>
         <p className="text-lg sm:text-xl font-semibold text-blue-700 mb-2">Your ride, your way!</p>
         <p className="text-gray-700 mb-8 text-base sm:text-lg">
           Fast, safe, and reliable rides at your fingertips.<br/>

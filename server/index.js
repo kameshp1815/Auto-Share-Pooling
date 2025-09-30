@@ -205,7 +205,22 @@ async function emitRideRequestToDriver(driverEmail, ride) {
   }
 }
 
+// Helper to emit ride status updates to users
+function emitRideStatusUpdate(userEmail, data) {
+  console.log('Broadcasting ride status update to all clients');
+  console.log('User email:', userEmail);
+  console.log('Data:', data);
+  
+  // For now, we'll broadcast to all connected clients
+  // In a production app, you'd want to track user connections
+  io.emit('ride:status-update', {
+    userEmail: userEmail.toLowerCase(),
+    ...data
+  });
+}
+
 module.exports.emitRideRequestToDriver = emitRideRequestToDriver;
+module.exports.emitRideStatusUpdate = emitRideStatusUpdate;
 
 // Start the server on HTTP server
 http.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));

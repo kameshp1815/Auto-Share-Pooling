@@ -11,7 +11,7 @@ export default function Dashboard() {
       <section className="w-full flex flex-col md:flex-row items-center justify-between px-2 sm:px-8 py-8 sm:py-16 md:py-24">
         <div className="flex-1 flex flex-col items-start justify-center mb-8 md:mb-0">
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-red-600 mb-4 sm:mb-6 leading-tight drop-shadow">
-            Book Your <span className="text-yellow-500">Taxi</span> Instantly!
+            Book Your <span className="text-yellow-500">Auto</span> Instantly!
           </h1>
           <p className="text-base sm:text-xl md:text-2xl text-gray-700 mb-6 sm:mb-8">
             Fast, safe, and reliable rides at your fingertips. Experience the new way to travel with AutoSharePolling.
