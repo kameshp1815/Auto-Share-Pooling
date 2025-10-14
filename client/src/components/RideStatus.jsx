@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { FaUser, FaPhone, FaIdCard, FaCar, FaCircle, FaMapMarkerAlt, FaClock, FaCheckCircle, FaSpinner, FaTimes, FaStar, FaSearch, FaShieldAlt, FaShare, FaMotorcycle, FaTaxi } from "react-icons/fa";
+import { FaUser, FaPhone, FaIdCard, FaCar, FaCircle, FaMapMarkerAlt, FaClock, FaCheckCircle, FaSpinner, FaTimes, FaStar, FaSearch, FaShieldAlt, FaShare, FaMotorcycle, FaTaxi, FaExternalLinkAlt } from "react-icons/fa";
 import io from "socket.io-client";
+import RideMap from "./RideMap";
 
 export default function RideStatus() {
-  const [rideStatus, setRideStatus] = useState('searching'); // 'searching', 'found', 'picked_up'
+  const [rideStatus, setRideStatus] = useState('searching');
   const [driverDetails, setDriverDetails] = useState(null);
   const [rideInfo, setRideInfo] = useState(null);
   const [socket, setSocket] = useState(null);
   const [timeRemaining, setTimeRemaining] = useState(3);
+  const [etaMinutes, setEtaMinutes] = useState(null);
+  const [pickupDistance, setPickupDistance] = useState(null);
 
   // Get user email from JWT token
   const token = localStorage.getItem("token");
@@ -77,6 +80,29 @@ export default function RideStatus() {
     }
   };
 
+  // Handle driver call
+  const handleCallDriver = (phone) => {
+    if (phone) {
+      window.open(`tel:${phone}`, '_self');
+    }
+  };
+
+  // Handle navigation to driver
+  const handleNavigateToDriver = (driverPosition) => {
+    if (driverPosition) {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${driverPosition.lat},${driverPosition.lng}`;
+      window.open(url, '_blank');    
+    }
+  };
+
+  // Handle navigation to destination
+  const handleNavigateToDestination = () => {
+    if (rideInfo?.to) {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(rideInfo.to)}`;
+      window.open(url, '_blank');
+    }
+  };
+
   return (
     <div className="h-screen bg-gray-100 relative overflow-hidden">
       {/* Status Bar */}
@@ -94,73 +120,30 @@ export default function RideStatus() {
         </div>
       </div>
 
-      {/* Map Area */}
-      <div className="absolute inset-0 bg-gray-200">
-        {/* Map Background */}
-        <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-300 relative">
-          {/* Roads */}
+      {/* Interactive Map Area */}
           <div className="absolute inset-0">
-            {/* Main road */}
-            <div className="absolute top-1/2 left-0 right-0 h-1 bg-yellow-300 transform -translate-y-1/2"></div>
-            {/* Side roads */}
-            <div className="absolute top-1/3 left-0 right-0 h-0.5 bg-gray-400 transform -translate-y-1/2"></div>
-            <div className="absolute top-2/3 left-0 right-0 h-0.5 bg-gray-400 transform -translate-y-1/2"></div>
-          </div>
-
-          {/* Route Line */}
-          <div className="absolute top-1/2 left-0 right-0 h-1 bg-blue-500 transform -translate-y-1/2"></div>
-
-          {/* Origin Pin */}
-          <div className="absolute top-1/4 right-1/4">
-            <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
-              <FaMapMarkerAlt className="text-white text-xs" />
-            </div>
-            <div className="absolute top-8 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded text-xs font-medium whitespace-nowrap">
-              {rideInfo?.from || 'Singanallur'}
-            </div>
-          </div>
-
-          {/* Destination Pin */}
-          <div className="absolute bottom-1/3 right-1/3">
-            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-              <FaMapMarkerAlt className="text-white text-xs" />
-            </div>
-            <div className="absolute top-8 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded text-xs font-medium whitespace-nowrap">
-              {rideInfo?.to || 'Pallapalayam'}
-            </div>
-          </div>
-
-          {/* Available Vehicles */}
-          {rideStatus === 'searching' && (
-            <>
-              <div className="absolute top-1/2 right-1/3 w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center">
-                <FaMotorcycle className="text-white text-xs" />
-              </div>
-              <div className="absolute top-1/3 right-1/2 w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center">
-                <FaMotorcycle className="text-white text-xs" />
-              </div>
-              <div className="absolute bottom-1/3 right-1/4 w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center">
-                <FaMotorcycle className="text-white text-xs" />
-              </div>
-            </>
-          )}
-
-          {/* Driver Location (when found) */}
-          {rideStatus === 'found' && driverDetails && (
-            <div className="absolute top-1/2 right-1/3">
-              <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center shadow-lg">
-                {getVehicleIcon(driverDetails.vehicleType)}
-              </div>
-            </div>
-          )}
-        </div>
+        <RideMap
+          rideInfo={rideInfo}
+          driverDetails={driverDetails}
+          rideStatus={rideStatus}
+          onNavigate={handleNavigateToDriver}
+          onCallDriver={handleCallDriver}
+          className="w-full h-full"
+        />
 
         {/* Action Buttons */}
         <div className="absolute bottom-32 right-4 space-y-2">
-          <button className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center">
+          <button 
+            onClick={handleNavigateToDestination}
+            className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors"
+            title="Navigate to destination"
+          >
+            <FaExternalLinkAlt className="text-blue-600" />
+          </button>
+          <button className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors">
             <FaShare className="text-gray-600" />
           </button>
-          <button className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center">
+          <button className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors">
             <FaShieldAlt className="text-blue-600" />
           </button>
         </div>
@@ -194,51 +177,63 @@ export default function RideStatus() {
           // Driver Found State
           <div className="p-6">
             <div className="mb-4">
-              <div className="text-gray-500 text-sm mb-1">You've reached your pickup</div>
-              <div className="text-green-600 font-bold text-lg">Pickup in {timeRemaining} mins</div>
-              <div className="text-gray-500 text-sm">Captain 1.2 km away</div>
+              <div className="text-gray-500 text-sm mb-1">Driver is on the way</div>
+              <div className="text-green-600 font-bold text-lg">ETA: {etaMinutes || timeRemaining} mins</div>
+              <div className="text-gray-500 text-sm">{pickupDistance || '1.2'} km away</div>
             </div>
 
-            <div className="mb-4">
-              <div className="text-gray-700 font-medium mb-2">Start your order with PIN</div>
-              <div className="flex space-x-2">
-                <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center font-mono">7</div>
-                <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center font-mono">7</div>
-                <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center font-mono">8</div>
-                <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center font-mono">6</div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 rounded-xl p-4 mb-4">
+            <div className="bg-gradient-to-r from-yellow-50 to-green-50 rounded-xl p-4 mb-4 border border-yellow-200">
               <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">
+                      {driverDetails.name ? driverDetails.name[0] : 'D'}
+                    </span>
+                  </div>
                 <div>
-                  <div className="font-bold text-lg">{driverDetails.vehicleNumber || 'TN38CU8587'}</div>
-                  <div className="text-gray-700 font-medium">{driverDetails.name || 'Pandi P'}</div>
+                    <div className="font-bold text-lg text-gray-800">{driverDetails.name || 'Driver'}</div>
+                    <div className="text-gray-600 text-sm">{driverDetails.vehicleNumber || 'TN38CU8587'}</div>
+                    <div className="text-gray-500 text-xs">{driverDetails.vehicleType || 'Auto'} • {driverDetails.vehicleModel || 'Bajaj'}</div>
+                  </div>
                 </div>
                 <div className="text-right">
-                  <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center mb-2">
-                    <span className="text-gray-600 font-bold">P</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center space-x-1 mb-1">
                     <FaStar className="text-yellow-500 text-sm" />
                     <span className="text-sm font-medium">4.6</span>
                   </div>
+                  <div className="text-xs text-gray-500">Rating</div>
                 </div>
               </div>
-              <button className="w-full mt-3 bg-gray-200 text-gray-700 py-2 rounded-lg flex items-center justify-center space-x-2">
-                <FaPhone className="text-gray-600" />
-                <span>Message {driverDetails.name || 'Pandi'}</span>
+              
+              <div className="flex gap-2 mt-3">
+                {driverDetails.phone && (
+                  <button 
+                    onClick={() => handleCallDriver(driverDetails.phone)}
+                    className="flex-1 bg-green-500 text-white py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-green-600 transition-colors"
+                  >
+                    <FaPhone className="text-sm" />
+                    <span>Call Driver</span>
+                  </button>
+                )}
+                <button 
+                  onClick={handleNavigateToDestination}
+                  className="flex-1 bg-blue-500 text-white py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-600 transition-colors"
+                >
+                  <FaExternalLinkAlt className="text-sm" />
+                  <span>Navigate</span>
               </button>
+              </div>
             </div>
 
-            <div className="flex justify-between items-center">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <div className="text-gray-600 text-sm">Pickup From</div>
-                <div className="text-gray-800 font-medium">{rideInfo?.from || 'Pallapalayam, Kannampalayam, Tamil...'}</div>
+                <div className="text-gray-600 text-sm mb-1">Pickup</div>
+                <div className="text-gray-800 font-medium text-sm">{rideInfo?.from || 'Pickup location'}</div>
               </div>
-              <button className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm">
-                Trip Details
-              </button>
+              <div>
+                <div className="text-gray-600 text-sm mb-1">Destination</div>
+                <div className="text-gray-800 font-medium text-sm">{rideInfo?.to || 'Destination'}</div>
+              </div>
             </div>
           </div>
         ) : (

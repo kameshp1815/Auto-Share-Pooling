@@ -16,6 +16,17 @@ router.post('/book', async (req, res) => {
     // Fetch user phone
     const user = await User.findOne({ email });
     const userPhone = user ? user.phone : '';
+    
+    // Check if there are potential shared rides on similar routes
+    // This is a simple implementation - in a real app, you'd use geospatial queries
+    const potentialSharedRides = await Ride.find({
+      status: 'Requested',
+      driver: '',
+      vehicle: vehicle,
+      isShared: false,
+      sharedRideOffered: false
+    });
+    
     const ride = new Ride({
       email,
       from,
@@ -27,12 +38,60 @@ router.post('/book', async (req, res) => {
       requestedAt: new Date(),
       driver: '',
       completedAt: null,
-      userPhone
+      userPhone,
+      // If there are potential shared rides, mark this ride as having a shared ride offer
+      sharedRideOffered: potentialSharedRides.length > 0,
+      originalFare: fare || ''
     });
+    
     await ride.save();
-    res.json({ message: 'Ride booked successfully!', rideId: ride._id });
+    res.json({ 
+      message: 'Ride booked successfully!', 
+      rideId: ride._id,
+      sharedRideOffered: ride.sharedRideOffered
+    });
   } catch (err) {
     console.error('Error in /book:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Handle shared ride acceptance or rejection
+router.post('/shared-ride/:rideId', async (req, res) => {
+  try {
+    const { rideId } = req.params;
+    const { accept } = req.body;
+    
+    const ride = await Ride.findById(rideId);
+    if (!ride) {
+      return res.status(404).json({ message: 'Ride not found' });
+    }
+    
+    if (accept) {
+      // Apply discount for shared ride (e.g., 20% off)
+      const originalFare = parseFloat(ride.fare.replace('₹', ''));
+      const discountedFare = Math.round(originalFare * 0.8);
+      
+      ride.isShared = true;
+      ride.sharedRideAccepted = true;
+      ride.sharedRideDeclined = false;
+      ride.originalFare = ride.fare;
+      ride.sharedRideDiscount = '20%';
+      ride.fare = `₹${discountedFare}`;
+    } else {
+      ride.sharedRideOffered = false;
+      ride.sharedRideDeclined = true;
+      ride.sharedRideAccepted = false;
+    }
+    
+    await ride.save();
+    
+    res.json({ 
+      message: accept ? 'Shared ride accepted' : 'Shared ride declined',
+      ride
+    });
+  } catch (err) {
+    console.error('Error in /shared-ride:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -226,6 +285,35 @@ router.post('/complete/:rideId', async (req, res) => {
     
     res.json({ message: 'Ride marked as completed', ride });
   } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Cancel a ride (user-initiated)
+router.post('/cancel/:rideId', async (req, res) => {
+  try {
+    const ride = await Ride.findById(req.params.rideId);
+    if (!ride) return res.status(404).json({ message: 'Ride not found' });
+    if (ride.status === 'Completed') return res.status(400).json({ message: 'Ride already completed' });
+    if (ride.status === 'Cancelled') return res.status(400).json({ message: 'Ride already cancelled' });
+
+    ride.status = 'Cancelled';
+    ride.cancelledAt = new Date();
+    await ride.save();
+
+    // Emit WebSocket event for status update
+    const { emitRideStatusUpdate } = require('..');
+    if (emitRideStatusUpdate) {
+      emitRideStatusUpdate(ride.email, {
+        rideId: ride._id,
+        status: ride.status,
+        driverDetails: ride.driverDetails
+      });
+    }
+
+    res.json({ message: 'Ride cancelled', ride });
+  } catch (err) {
+    console.error('Error cancelling ride:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });

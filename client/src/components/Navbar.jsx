@@ -27,7 +27,6 @@ export default function Navbar({ token, setToken, driverToken, setDriverToken })
   const navLinks = token ? [
     { to: "/dashboard", label: "Dashboard" },
     { to: "/booking", label: "Booking" },
-    { to: "/ride-status", label: "Ride Status" },
     { to: "/profile", label: "Profile" },
     { to: "/contact", label: "Contact" },
   ] : [

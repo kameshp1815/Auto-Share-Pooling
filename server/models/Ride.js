@@ -25,7 +25,14 @@ const rideSchema = new mongoose.Schema({
   paymentStatus: { type: String, default: 'pending' },
   paymentId: { type: String, default: '' },
   paymentMethod: { type: String, enum: ['cash', 'online', ''], default: '' },
-  userPhone: { type: String, default: '' }
+  userPhone: { type: String, default: '' },
+  // Shared ride fields
+  isShared: { type: Boolean, default: false },
+  sharedRideOffered: { type: Boolean, default: false },
+  sharedRideAccepted: { type: Boolean, default: false },
+  sharedRideDeclined: { type: Boolean, default: false },
+  sharedRideDiscount: { type: String, default: '' },
+  originalFare: { type: String, default: '' }
 });
 
 module.exports = mongoose.model('Ride', rideSchema);
