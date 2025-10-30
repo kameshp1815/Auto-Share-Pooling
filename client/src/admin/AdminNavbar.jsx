@@ -3,8 +3,9 @@ import { Link, useLocation } from "react-router-dom";
 
 export default function AdminNavbar() {
   const location = useLocation();
-  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || "admin";
-  const adminName = import.meta.env.VITE_ADMIN_NAME || (adminEmail.includes('@') ? adminEmail.split('@')[0] : adminEmail);
+  const storedEmail = (typeof window !== 'undefined' && localStorage.getItem('adminEmail')) || 'admin';
+  const adminEmail = storedEmail;
+  const adminName = storedEmail.includes('@') ? storedEmail.split('@')[0] : storedEmail;
   return (
     <nav className="w-full bg-gray-900 text-white shadow-lg px-6 py-4 flex items-center justify-between">
       <div className="text-2xl font-bold text-yellow-400">Admin Panel</div>
@@ -28,4 +29,4 @@ export default function AdminNavbar() {
       </div>
     </nav>
   );
-} 
+}

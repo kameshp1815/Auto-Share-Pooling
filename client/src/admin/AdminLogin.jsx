@@ -17,25 +17,29 @@ export default function AdminLogin() {
     setSuccess("");
     setIsSubmitting(true);
 
-    const adminEmail = import.meta.env.VITE_ADMIN_EMAIL?.trim();
-    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD?.trim();
-
-    if (!adminEmail || !adminPassword) {
-      setError("Admin credentials are not configured.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (email.trim().toLowerCase() === adminEmail.toLowerCase() && password === adminPassword) {
-      localStorage.setItem("adminToken", "true");
-      setSuccess("Login successful! Redirecting to admin dashboard...");
-      setTimeout(() => {
-        navigate("/admin-autoshare");
-      }, 1200);
-    } else {
-      setError("Invalid admin credentials");
-      setIsSubmitting(false);
-    }
+    fetch(`/api/auth/admin-login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({ message: 'Login failed' }));
+          throw new Error(data.message || 'Login failed');
+        }
+        return res.json();
+      })
+      .then((data) => {
+        const token = data.token || 'true';
+        localStorage.setItem('adminToken', token);
+        if (data.email) localStorage.setItem('adminEmail', data.email);
+        setSuccess("Login successful! Redirecting to admin dashboard...");
+        setTimeout(() => navigate('/admin-autoshare'), 800);
+      })
+      .catch((err) => {
+        setError(err.message || 'Invalid admin credentials');
+      })
+      .finally(() => setIsSubmitting(false));
   };
 
   return (
