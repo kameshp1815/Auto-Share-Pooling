@@ -205,7 +205,7 @@ function App() {
         {(() => {
           const path = window.location.pathname;
           const isAdminPage = path === '/admin-login' || path === '/admin-autoshare' || path.startsWith('/admin/');
-          return path !== '/' && !isAdminPage;
+          return !isAdminPage;
         })() && <Navbar token={token} setToken={setToken} driverToken={driverToken} setDriverToken={setDriverToken} />}
         <main className="flex-1">
           <Routes>
@@ -233,6 +233,7 @@ function App() {
                 )
               }
             />
+            <Route path="/signup" element={<Navigate to="/register" />} />
             <Route
               path="/dashboard"
               element={
