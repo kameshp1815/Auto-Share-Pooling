@@ -25,6 +25,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
+app.options('*', cors());
 
 // Preflight requests are handled by the main CORS middleware above.
 
