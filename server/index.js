@@ -12,7 +12,16 @@ const googleAuthRoute = require('./routes/googleAuth');
 const driverRoutes = require('./routes/driver');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:5173",               // local dev frontend
+    "https://auto-share-pooling.vercel.app/",
+    "https://auto-share-pooling.vercel.app/*" ,
+    "https://auto-share-pooling-backend.vercel.app/"
+   ],
+  credentials: true
+}));
+
 app.use(express.json());
 app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));
 
