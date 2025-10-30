@@ -26,8 +26,7 @@ app.use(cors({
   credentials: true
 }));
 
-// ✅ Handle preflight (OPTIONS) requests globally
-app.options('*', cors());
+// Preflight requests are handled by the main CORS middleware above.
 
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
