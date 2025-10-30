@@ -23,7 +23,6 @@ import UserManagement from "./admin/UserManagement";
 import DriverManagement from "./admin/DriverManagement";
 import AdminNavbar from "./admin/AdminNavbar";
 import AdminLogin from "./admin/AdminLogin";
-import RideStatus from "./components/RideStatus";
 
 function AdminHome() {
   const [loading, setLoading] = React.useState(true);
@@ -259,16 +258,6 @@ function App() {
               element={
                 token ? (
                   <Profile />
-                ) : (
-                  <Navigate to="/login" />
-                )
-              }
-            />
-            <Route
-              path="/ride-status"
-              element={
-                token ? (
-                  <RideStatus />
                 ) : (
                   <Navigate to="/login" />
                 )

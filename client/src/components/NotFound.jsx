@@ -4,7 +4,6 @@ import autoImg from "../assets/auto.png";
 
 export default function NotFound() {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-full bg-gradient-to-br from-yellow-100 via-white to-blue-100 px-2 sm:px-4 py-6">
       {/* App Name */}
@@ -36,9 +35,9 @@ export default function NotFound() {
       <div className="text-3xl sm:text-4xl font-extrabold text-yellow-400 mb-2 tracking-tight text-center w-full">404</div>
       <button
         className="w-full max-w-xs bg-blue-500 text-white py-3 px-8 rounded-lg font-bold shadow-md hover:bg-blue-600 transition-all text-lg mx-auto"
-        onClick={() => navigate(token ? "/dashboard" : "/login")}
+        onClick={() => navigate("/")}
       >
-        {token ? "Go to Dashboard" : "Go to Login"}
+        Go Home
       </button>
       <style>{`
         @keyframes auto-slide-shake {

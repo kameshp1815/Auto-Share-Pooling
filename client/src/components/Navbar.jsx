@@ -6,6 +6,7 @@ export default function Navbar({ token, setToken, driverToken, setDriverToken })
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const isDriverPage = location.pathname.startsWith("/driver");
 
   const handleLogout = () => {
     const isDriverPage = location.pathname.startsWith("/driver");
@@ -22,8 +23,6 @@ export default function Navbar({ token, setToken, driverToken, setDriverToken })
   };
 
   // Only show minimal navbar on driver pages
-  const isDriverPage = location.pathname.startsWith("/driver");
-
   const navLinks = token ? [
     { to: "/dashboard", label: "Dashboard" },
     { to: "/booking", label: "Booking" },
@@ -60,6 +59,7 @@ export default function Navbar({ token, setToken, driverToken, setDriverToken })
                 {link.label}
               </Link>
             ))}
+            
             {token && (
               <button
                 onClick={handleLogout}
@@ -82,6 +82,7 @@ export default function Navbar({ token, setToken, driverToken, setDriverToken })
                 {link.label}
               </Link>
             ))}
+            
           </div>
         )}
         {/* Hamburger for Mobile */}

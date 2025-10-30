@@ -2,7 +2,7 @@ const express = require('express');
 const Ride = require('../models/Ride');
 const User = require('../models/User');
 const router = express.Router();
-const { emitRideRequestToDriver } = require('..');
+const { emitRideRequestToDriver, emitRideStatusUpdate } = require('..');
 
 // Book a new ride
 router.post('/book', async (req, res) => {
@@ -158,7 +158,6 @@ router.post('/accept/:rideId', async (req, res) => {
     await ride.save();
     
     // Emit WebSocket event to notify user about ride acceptance
-    const { emitRideStatusUpdate } = require('..');
     if (emitRideStatusUpdate) {
       console.log('Emitting ride status update for user:', ride.email);
       console.log('Ride details:', {
@@ -206,7 +205,6 @@ router.post('/arrived/:rideId', async (req, res) => {
     await ride.save();
     
     // Emit WebSocket event for status update
-    const { emitRideStatusUpdate } = require('..');
     if (emitRideStatusUpdate) {
       emitRideStatusUpdate(ride.email, {
         rideId: ride._id,
@@ -234,7 +232,6 @@ router.post('/start/:rideId', async (req, res) => {
     await ride.save();
     
     // Emit WebSocket event for status update
-    const { emitRideStatusUpdate } = require('..');
     if (emitRideStatusUpdate) {
       emitRideStatusUpdate(ride.email, {
         rideId: ride._id,

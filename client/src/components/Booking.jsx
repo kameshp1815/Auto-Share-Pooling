@@ -30,6 +30,7 @@ export default function Booking() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('upi');
   const navigate = useNavigate();
+  const [geoLoading, setGeoLoading] = useState(false);
 
   // Get user email from JWT token
   const token = localStorage.getItem("token");
@@ -39,6 +40,40 @@ export default function Booking() {
   const quickLocations = {
     home: "Home, Main Street",
     work: "Work, Tech Park"
+  };
+
+  // Use current GPS location for Pickup and reverse geocode
+  const handleUseCurrentLocation = async () => {
+    setMessage("");
+    if (!('geolocation' in navigator)) {
+      setMessage('❌ Geolocation not supported by your browser.');
+      return;
+    }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      try {
+        const { latitude, longitude } = pos.coords;
+        const res = await axios.get('https://us1.locationiq.com/v1/reverse', {
+          params: { key: LOCATIONIQ_API_KEY, lat: latitude, lon: longitude, format: 'json' },
+          timeout: 10000
+        });
+        const display = res?.data?.display_name;
+        if (display) {
+          setFrom(display);
+          setFromSuggestions([]);
+          setFromFocused(false);
+        } else {
+          setMessage('⚠️ Could not resolve your current address.');
+        }
+      } catch (err) {
+        setMessage('⚠️ Failed to reverse geocode current location.');
+      } finally {
+        setGeoLoading(false);
+      }
+    }, (err) => {
+      setGeoLoading(false);
+      setMessage('❌ Unable to get current location. Please allow location access.');
+    }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
   };
 
   const handleSwap = () => {
@@ -614,6 +649,15 @@ export default function Booking() {
                     required
                   />
                 </div>
+                <button
+                  type="button"
+                  onClick={handleUseCurrentLocation}
+                  disabled={geoLoading}
+                  className={`ml-2 px-3 py-2 rounded-xl text-xs font-semibold border ${geoLoading ? 'bg-gray-200 text-gray-500' : 'bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200'}`}
+                  title="Use current location"
+                >
+                  {geoLoading ? 'Locating...' : 'Use current location'}
+                </button>
               </div>
               {fromFocused && fromSuggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 bg-white/90 border border-yellow-100 rounded-2xl shadow-2xl z-20 max-h-48 overflow-y-auto mt-1 backdrop-blur-md">

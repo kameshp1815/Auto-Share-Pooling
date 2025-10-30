@@ -20,6 +20,11 @@ const rideSchema = new mongoose.Schema({
     vehicleType: { type: String, default: '' },
     vehicleModel: { type: String, default: '' }
   },
+  driverLocation: {
+    lat: { type: Number, default: null },
+    lng: { type: Number, default: null },
+    updatedAt: { type: Date, default: null }
+  },
   completedAt: { type: Date, default: null },
   cancelledAt: { type: Date, default: null },
   paymentStatus: { type: String, default: 'pending' },

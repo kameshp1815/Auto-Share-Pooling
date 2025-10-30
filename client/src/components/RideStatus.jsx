@@ -11,6 +11,8 @@ export default function RideStatus() {
   const [timeRemaining, setTimeRemaining] = useState(3);
   const [etaMinutes, setEtaMinutes] = useState(null);
   const [pickupDistance, setPickupDistance] = useState(null);
+  const [driverPosition, setDriverPosition] = useState(null);
+  const [toasts, setToasts] = useState([]);
 
   // Get user email from JWT token
   const token = localStorage.getItem("token");
@@ -36,11 +38,35 @@ export default function RideStatus() {
         }
       });
 
+      // Generic user notifications
+      newSocket.on('notify:user', (payload) => {
+        if (payload.userEmail === userEmail.toLowerCase()) {
+          const id = Date.now();
+          setToasts((prev) => [...prev, { id, title: payload.title || 'Notification', body: payload.body || '' }]);
+          setTimeout(() => setToasts((prev) => prev.filter(t => t.id !== id)), 4000);
+        }
+      });
+
+      newSocket.on('ride:driver-location', (data) => {
+        if (data.userEmail === userEmail.toLowerCase()) {
+          const pos = { lat: data.lat, lng: data.lng };
+          setDriverPosition(pos);
+          // Try to compute rough ETA/distance if we have pickup coordinates in rideInfo.from (not guaranteed)
+          if (rideInfo?.fromCoords) {
+            const dKm = haversine(pos, rideInfo.fromCoords);
+            setPickupDistance(dKm.toFixed(1));
+            const speedKmh = 20; // rough urban speed
+            const eta = Math.max(1, Math.round((dKm / speedKmh) * 60));
+            setEtaMinutes(eta);
+          }
+        }
+      });
+
       return () => {
         newSocket.close();
       };
     }
-  }, [userEmail]);
+  }, [userEmail, rideInfo?.fromCoords]);
 
   const fetchRideData = async () => {
     if (!userEmail) return;
@@ -54,6 +80,9 @@ export default function RideStatus() {
           if (data.driverDetails && data.driverDetails.name) {
             setDriverDetails(data.driverDetails);
             setRideStatus('found');
+            if (data.driverLocation && data.driverLocation.lat && data.driverLocation.lng) {
+              setDriverPosition({ lat: data.driverLocation.lat, lng: data.driverLocation.lng });
+            }
           } else if (data.status === 'Requested') {
             setRideStatus('searching');
           }
@@ -67,6 +96,18 @@ export default function RideStatus() {
       console.error('Error fetching ride data:', error);
     }
   };
+
+  function haversine(a, b) {
+    const toRad = (x) => (x * Math.PI) / 180;
+    const R = 6371; // km
+    const dLat = toRad(b.lat - a.lat);
+    const dLng = toRad(b.lng - a.lng);
+    const lat1 = toRad(a.lat);
+    const lat2 = toRad(b.lat);
+    const s = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
+    return R * c;
+  }
 
   const getVehicleIcon = (vehicleType) => {
     switch (vehicleType?.toLowerCase()) {
@@ -105,6 +146,17 @@ export default function RideStatus() {
 
   return (
     <div className="h-screen bg-gray-100 relative overflow-hidden">
+      {/* Toasts */}
+      {toasts.length > 0 && (
+        <div className="absolute top-16 right-4 z-50 space-y-2">
+          {toasts.map(t => (
+            <div key={t.id} className="bg-white shadow-lg border border-yellow-200 rounded-xl px-4 py-3 min-w-[220px]">
+              <div className="font-semibold text-gray-800">{t.title}</div>
+              {t.body && <div className="text-sm text-gray-600">{t.body}</div>}
+            </div>
+          ))}
+        </div>
+      )}
       {/* Status Bar */}
       <div className="absolute top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm px-4 py-2 flex justify-between items-center text-sm">
         <span className="font-medium">2:53</span>
@@ -128,6 +180,7 @@ export default function RideStatus() {
           rideStatus={rideStatus}
           onNavigate={handleNavigateToDriver}
           onCallDriver={handleCallDriver}
+          driverPosition={driverPosition}
           className="w-full h-full"
         />
 

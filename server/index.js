@@ -1,7 +1,9 @@
 const express = require('express');
-const cors = require('cors');
+const path = require('path');
+const Ride = require('./models/Ride');
 const mongoose = require('mongoose');
 const Razorpay = require('razorpay');
+const cors = require('cors');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -187,6 +189,31 @@ io.on('connection', (socket) => {
       if (id === socket.id) onlineDriverEmailToSocketId.delete(email);
     }
   });
+
+  // Receive driver live location and persist + broadcast
+  socket.on('driver:location', async ({ email, lat, lng }) => {
+    try {
+      const driver = (email || '').toLowerCase();
+      if (!driver || typeof lat !== 'number' || typeof lng !== 'number') return;
+      // Update the latest non-completed ride for this driver
+      const ride = await Ride.findOneAndUpdate(
+        { driver, status: { $in: ['Accepted','Arrived','Started','Ongoing'] } },
+        { $set: { driverLocation: { lat, lng, updatedAt: new Date() } } },
+        { sort: { updatedAt: -1 }, new: true }
+      );
+      if (ride) {
+        io.emit('ride:driver-location', {
+          userEmail: (ride.email || '').toLowerCase(),
+          lat,
+          lng,
+          rideId: ride._id.toString(),
+          updatedAt: Date.now()
+        });
+      }
+    } catch (e) {
+      // swallow
+    }
+  });
 });
 
 // Helper to emit a ride request to a specific driver by email
@@ -218,9 +245,6 @@ function emitRideStatusUpdate(userEmail, data) {
     ...data
   });
 }
-
-module.exports.emitRideRequestToDriver = emitRideRequestToDriver;
-module.exports.emitRideStatusUpdate = emitRideStatusUpdate;
 
 // Start the server on HTTP server
 http.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
