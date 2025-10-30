@@ -14,20 +14,12 @@ const googleAuthRoute = require('./routes/googleAuth');
 const driverRoutes = require('./routes/driver');
 
 const app = express();
+const http = require('http').createServer(app);
+const { Server } = require('socket.io');
+const io = new Server(http, { cors: { origin: '*' } });
 
-// ✅ Proper CORS Configuration for Vercel Deployment
-app.use(cors({
-  origin: [
-    'http://localhost:5173',                // local dev frontend
-    'https://auto-share-pooling.vercel.app' // deployed frontend
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
-app.options('*', cors());
-
-// Preflight requests are handled by the main CORS middleware above.
+// Simple CORS for local development
+app.use(cors());
 
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -158,5 +150,53 @@ app.get('/api/payment/status/:rideId', async (req, res) => {
   }
 });
 
-// ✅ Export for Vercel Serverless
-module.exports = app;
+// Socket.IO: track online drivers
+const onlineDriverEmailToSocketId = new Map();
+
+io.on('connection', (socket) => {
+  socket.on('driver:online', ({ email }) => {
+    if (!email) return;
+    onlineDriverEmailToSocketId.set((email || '').toLowerCase(), socket.id);
+  });
+
+  socket.on('driver:offline', ({ email }) => {
+    if (!email) return;
+    onlineDriverEmailToSocketId.delete((email || '').toLowerCase());
+  });
+
+  socket.on('disconnect', () => {
+    for (const [email, id] of onlineDriverEmailToSocketId.entries()) {
+      if (id === socket.id) onlineDriverEmailToSocketId.delete(email);
+    }
+  });
+});
+
+// Helpers to emit updates
+function emitRideRequestToDriver(driverEmail, ride) {
+  const sid = onlineDriverEmailToSocketId.get((driverEmail || '').toLowerCase());
+  if (sid) {
+    io.to(sid).emit('ride:request', {
+      rideId: ride._id,
+      pickup: ride.from,
+      dropoff: ride.to,
+      price: ride.fare,
+      distance: ride.distance,
+      vehicle: ride.vehicle,
+      timeLimit: 15000
+    });
+  }
+}
+
+function emitRideStatusUpdate(userEmail, data) {
+  io.emit('ride:status-update', {
+    userEmail: (userEmail || '').toLowerCase(),
+    ...data
+  });
+}
+
+module.exports.emitRideRequestToDriver = emitRideRequestToDriver;
+module.exports.emitRideStatusUpdate = emitRideStatusUpdate;
+
+// Start HTTP server
+const PORT = process.env.PORT || 5000;
+http.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
