@@ -17,6 +17,31 @@ const storage = multer.diskStorage({
     cb(null, uniqueSuffix + '-' + file.originalname.replace(/\s+/g, '_'));
   }
 });
+
+// Admin Login (server-validated using env)
+router.post('/admin-login', async (req, res) => {
+  try {
+    const email = (req.body.email || '').trim().toLowerCase();
+    const password = (req.body.password || '').trim();
+
+    const adminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+    const adminPassword = (process.env.ADMIN_PASSWORD || '').trim();
+
+    if (!adminEmail || !adminPassword) {
+      return res.status(500).json({ message: 'Admin credentials not configured' });
+    }
+
+    if (email === adminEmail && password === adminPassword) {
+      const token = jwt.sign({ role: 'admin', email }, process.env.JWT_SECRET || 'secret', { expiresIn: '2h' });
+      return res.json({ token, email });
+    }
+
+    return res.status(401).json({ message: 'Invalid admin credentials' });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 const upload = multer({ storage });
 
 // Ensure uploads directory exists

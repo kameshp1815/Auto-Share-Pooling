@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import autoImg from "../assets/taxi.png";
+import SOS from "./SOS";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -88,6 +89,7 @@ export default function Dashboard() {
           }
         `}
       </style>
+      <SOS />
     </div>
   );
 }
