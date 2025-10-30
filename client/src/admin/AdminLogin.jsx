@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FiLock, FiMail, FiEye, FiEyeOff, FiShield } from "react-icons/fi";
+import axios from "axios";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -17,19 +18,9 @@ export default function AdminLogin() {
     setSuccess("");
     setIsSubmitting(true);
 
-    fetch(`/api/auth/admin-login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({ message: 'Login failed' }));
-          throw new Error(data.message || 'Login failed');
-        }
-        return res.json();
-      })
-      .then((data) => {
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+    axios.post(`${API_BASE}/api/auth/admin-login`, { email, password })
+      .then(({ data }) => {
         const token = data.token || 'true';
         localStorage.setItem('adminToken', token);
         if (data.email) localStorage.setItem('adminEmail', data.email);
@@ -37,7 +28,8 @@ export default function AdminLogin() {
         setTimeout(() => navigate('/admin-autoshare'), 800);
       })
       .catch((err) => {
-        setError(err.message || 'Invalid admin credentials');
+        const msg = err?.response?.data?.message || err.message || 'Invalid admin credentials';
+        setError(msg);
       })
       .finally(() => setIsSubmitting(false));
   };

@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react(),tailwindcss()],
   server: {
     proxy: {
-      '/api': 'http://localhost:5000',
+      '/api': 'https://auto-share-pooling-backend.vercel.app/',
     },
   },
 });
