@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const multer = require('multer');
 const path = require('path');
+const Otp = require('../models/Otp');
+const nodemailer = require('nodemailer');
 
 const router = express.Router();
 
@@ -18,36 +20,87 @@ const storage = multer.diskStorage({
   }
 });
 
-// Admin Login (server-validated using env)
-router.post('/admin-login', async (req, res) => {
-  try {
-    const email = (req.body.email || '').trim().toLowerCase();
-    const password = (req.body.password || '').trim();
-
-    const adminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
-    const adminPassword = (process.env.ADMIN_PASSWORD || '').trim();
-
-    if (!adminEmail || !adminPassword) {
-      return res.status(500).json({ message: 'Admin credentials not configured' });
-    }
-
-    if (email === adminEmail && password === adminPassword) {
-      const token = jwt.sign({ role: 'admin', email }, process.env.JWT_SECRET || 'secret', { expiresIn: '2h' });
-      return res.json({ token, email });
-    }
-
-    return res.status(401).json({ message: 'Invalid admin credentials' });
-  } catch (err) {
-    return res.status(500).json({ message: 'Server error' });
-  }
-});
-
 const upload = multer({ storage });
 
 // Ensure uploads directory exists
 const fs = require('fs');
 const uploadDir = path.join(__dirname, '../uploads/driver_docs');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+// Email transport for OTP (configure via env)
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT || '587', 10),
+  secure: false,
+  auth: process.env.SMTP_USER && process.env.SMTP_PASS ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
+});
+
+function generateOtpCode() {
+  return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+}
+
+// Request OTP for registration
+router.post('/request-otp', async (req, res) => {
+  try {
+    const email = (req.body.email || '').trim().toLowerCase();
+    if (!email) return res.status(400).json({ message: 'Email required' });
+
+    // Basic cooldown: if an unexpired OTP exists within 60s, reject
+    const now = new Date();
+    const existing = await Otp.findOne({ email, purpose: 'register', verified: false, expiresAt: { $gt: now } }).sort({ createdAt: -1 });
+    if (existing && (now - existing.createdAt) < 60000) {
+      return res.status(429).json({ message: 'Please wait before requesting another OTP' });
+    }
+
+    const code = generateOtpCode();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    await Otp.create({ email, code, purpose: 'register', expiresAt });
+
+    if (!process.env.SMTP_HOST) {
+      console.warn('SMTP not configured. Logging OTP to server logs for dev only:', code);
+    } else {
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+        to: email,
+        subject: 'Your AutoSharePooling OTP',
+        text: `Your OTP is ${code}. It expires in 10 minutes.`,
+        html: `<p>Your OTP is <b>${code}</b>. It expires in 10 minutes.</p>`
+      });
+    }
+
+    return res.json({ message: 'OTP sent' });
+  } catch (err) {
+    console.error('request-otp error', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Verify OTP for registration
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const email = (req.body.email || '').trim().toLowerCase();
+    const code = (req.body.code || '').trim();
+    if (!email || !code) return res.status(400).json({ message: 'Email and code required' });
+
+    const otp = await Otp.findOne({ email, purpose: 'register', verified: false }).sort({ createdAt: -1 });
+    if (!otp) return res.status(400).json({ message: 'No OTP requested' });
+    if (otp.expiresAt < new Date()) return res.status(400).json({ message: 'OTP expired' });
+    if (otp.attempts >= 5) return res.status(429).json({ message: 'Too many attempts' });
+
+    if (otp.code !== code) {
+      otp.attempts += 1;
+      await otp.save();
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    otp.verified = true;
+    await otp.save();
+    return res.json({ message: 'OTP verified' });
+  } catch (err) {
+    console.error('verify-otp error', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // Register
 router.post('/register', async (req, res) => {
@@ -59,11 +112,18 @@ router.post('/register', async (req, res) => {
     return res.status(400).json({ message: 'Invalid phone number.' });
   }
   try {
+    // Enforce verified OTP before registration
+    const verifiedOtp = await Otp.findOne({ email: (email || '').toLowerCase(), purpose: 'register', verified: true }).sort({ createdAt: -1 });
+    if (!verifiedOtp) {
+      return res.status(400).json({ message: 'Please verify your email with OTP before registering.' });
+    }
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: 'Email already registered' });
     const hashed = await bcrypt.hash(password, 10);
     const user = new User({ name, email, password: hashed, phone, type: role || 'user' });
     await user.save();
+    // Invalidate OTP after successful registration
+    await Otp.deleteMany({ email: (email || '').toLowerCase(), purpose: 'register' });
     res.status(201).json({ message: 'User registered' });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });

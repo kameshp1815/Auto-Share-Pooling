@@ -211,7 +211,15 @@ function App() {
           <Routes>
             <Route
               path="/"
-              element={<Home />}
+              element={
+                token ? (
+                  <Navigate to="/dashboard" />
+                ) : driverToken ? (
+                  <Navigate to="/driver/dashboard" />
+                ) : (
+                  <Home />
+                )
+              }
             />
             <Route
               path="/login"
@@ -320,7 +328,13 @@ function App() {
             />
             <Route
               path="/driver-register"
-              element={<DriverRegister />}
+              element={
+                driverToken ? (
+                  <Navigate to="/driver/dashboard" />
+                ) : (
+                  <DriverRegister />
+                )
+              }
             />
             <Route
               path="/contact"
@@ -364,7 +378,13 @@ function App() {
             />
             <Route
               path="/admin-login"
-              element={<AdminLogin />}
+              element={
+                localStorage.getItem('adminToken') ? (
+                  <Navigate to="/admin-autoshare" />
+                ) : (
+                  <AdminLogin />
+                )
+              }
             />
             <Route path="*" element={<NotFound />} />
           </Routes>

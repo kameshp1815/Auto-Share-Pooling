@@ -7,6 +7,54 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpRequested, setOtpRequested] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const API = ""; // Using Vite proxy in dev; adjust if needed with VITE_API_BASE_URL
+
+  const requestOtp = async () => {
+    setMessage("");
+    if (!email.trim()) { setMessage("Enter email first"); return; }
+    setBusy(true);
+    try {
+      const res = await fetch(`${API}/api/auth/request-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Failed to send OTP');
+      setOtpRequested(true);
+      setMessage("OTP sent to your email");
+    } catch (e) {
+      setMessage(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const verifyOtp = async () => {
+    setMessage("");
+    if (!email.trim() || !otp.trim()) { setMessage("Enter email and OTP"); return; }
+    setBusy(true);
+    try {
+      const res = await fetch(`${API}/api/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code: otp })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'OTP verification failed');
+      setOtpVerified(true);
+      setMessage("OTP verified. You can register now.");
+    } catch (e) {
+      setMessage(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,7 +63,11 @@ export default function Register() {
       setMessage("Please enter a valid 10-digit phone number.");
       return;
     }
-    const response = await fetch("/api/auth/register", {
+    if (!otpVerified) {
+      setMessage("Please verify OTP sent to your email before registering.");
+      return;
+    }
+    const response = await fetch(`${API}/api/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password, phone }),
@@ -56,6 +108,35 @@ export default function Register() {
             onChange={e => setEmail(e.target.value)}
             required
           />
+          <div className="flex gap-2">
+            <input
+              className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-300 transition placeholder-gray-400 bg-gray-50"
+              type="text"
+              placeholder="Enter 6-digit OTP"
+              value={otp}
+              onChange={e => setOtp(e.target.value)}
+              maxLength={6}
+              inputMode="numeric"
+              pattern="\\d{6}"
+              disabled={!otpRequested || otpVerified}
+            />
+            <button
+              type="button"
+              onClick={requestOtp}
+              disabled={busy}
+              className="px-3 sm:px-4 whitespace-nowrap bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-semibold disabled:opacity-60"
+            >
+              {busy ? 'Please wait' : (otpRequested ? 'Resend OTP' : 'Send OTP')}
+            </button>
+            <button
+              type="button"
+              onClick={verifyOtp}
+              disabled={busy || !otpRequested || otpVerified}
+              className="px-3 sm:px-4 whitespace-nowrap bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold disabled:opacity-60"
+            >
+              {otpVerified ? 'Verified' : 'Verify'}
+            </button>
+          </div>
           <input
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-300 transition placeholder-gray-400 bg-gray-50"
             type="password"
@@ -78,6 +159,7 @@ export default function Register() {
             Register
           </button>
         </form>
+
         <div className="mt-6 text-gray-600 text-sm text-center">
           Already have an account?{' '}
           <a href="/login" className="text-green-600 font-semibold hover:underline">Login</a>
