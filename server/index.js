@@ -5,6 +5,8 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 require('dotenv').config();
 
+const path = require('path');
+
 // Routes
 const authRoutes = require('./routes/auth');
 const rideRoutes = require('./routes/rides');
@@ -12,20 +14,25 @@ const googleAuthRoute = require('./routes/googleAuth');
 const driverRoutes = require('./routes/driver');
 
 const app = express();
+
+// ✅ Proper CORS Configuration for Vercel Deployment
 app.use(cors({
   origin: [
-    "http://localhost:5173",               // local dev frontend
-    "https://auto-share-pooling.vercel.app/",
-    "https://auto-share-pooling.vercel.app/*" ,
-    "https://auto-share-pooling-backend.vercel.app/"
-   ],
+    'http://localhost:5173',                // local dev frontend
+    'https://auto-share-pooling.vercel.app' // deployed frontend
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
 
-app.use(express.json());
-app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));
+// ✅ Handle preflight (OPTIONS) requests globally
+app.options('*', cors());
 
-// MongoDB Connection
+app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// ✅ MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -33,7 +40,7 @@ mongoose.connect(process.env.MONGO_URI, {
 .then(() => console.log('✅ MongoDB connected successfully'))
 .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// Razorpay Initialization
+// ✅ Razorpay Initialization
 let razorpay;
 try {
   razorpay = new Razorpay({
@@ -45,18 +52,18 @@ try {
   console.error('❌ Razorpay initialization failed:', error.message);
 }
 
-// Routes
+// ✅ API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/rides', rideRoutes);
 app.use('/api/auth', googleAuthRoute);
 app.use('/api/driver', driverRoutes);
 
-// Root Endpoint
+// ✅ Root Endpoint
 app.get('/', (req, res) => {
-  res.send('🚗 AutoSharePolling Backend is Running on Vercel');
+  res.send('🚗 AutoSharePooling Backend is Running on Vercel');
 });
 
-// Create Razorpay Order
+// ✅ Create Razorpay Order
 app.post('/api/payment/order', async (req, res) => {
   const { amount, currency = 'INR', receipt } = req.body;
 
@@ -88,7 +95,7 @@ app.post('/api/payment/order', async (req, res) => {
   }
 });
 
-// Verify Razorpay Payment
+// ✅ Verify Razorpay Payment
 app.post('/api/payment/verify', async (req, res) => {
   const { paymentId, orderId, signature, rideId } = req.body;
   const Ride = require('./models/Ride');
@@ -137,7 +144,7 @@ app.post('/api/payment/verify', async (req, res) => {
   }
 });
 
-// Get Payment Status
+// ✅ Get Payment Status
 app.get('/api/payment/status/:rideId', async (req, res) => {
   try {
     const Ride = require('./models/Ride');
@@ -151,5 +158,5 @@ app.get('/api/payment/status/:rideId', async (req, res) => {
   }
 });
 
-// ⚡ Export for Vercel Serverless Function
+// ✅ Export for Vercel Serverless
 module.exports = app;
