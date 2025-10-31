@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCircle, FaEnvelope, FaPhone, FaIdBadge, FaCarSide, FaCheckCircle, FaClipboardList } from "react-icons/fa";
 import { useCallback } from "react";
- 
+import io from "socket.io-client";
 
 export default function DriverDashboard({ setDriverToken }) {
   const navigate = useNavigate();
@@ -15,13 +15,11 @@ export default function DriverDashboard({ setDriverToken }) {
   const [message, setMessage] = useState("");
   const [driverStatus, setDriverStatus] = useState('offline');
   const [toggling, setToggling] = useState(false);
-  
-  // Realtime and modal removed for stability
+  const [socket, setSocket] = useState(null);
+  const [geoWatchId, setGeoWatchId] = useState(null);
   const [historyFilter, setHistoryFilter] = useState('all');
-  
 
   useEffect(() => {
-    // Get driver email from driverToken
     const driverToken = localStorage.getItem("driverToken");
     if (!driverToken) {
       navigate("/driver-login", { replace: true });
@@ -35,6 +33,12 @@ export default function DriverDashboard({ setDriverToken }) {
     }
   }, []);
 
+  useEffect(() => {
+    const s = io('http://localhost:5000');
+    setSocket(s);
+    return () => { try { s.close(); } catch {} };
+  }, []);
+
   const backendOrigin = "http://localhost:5000";
   const fileToUrl = (p) => {
     if (!p) return "";
@@ -44,7 +48,6 @@ export default function DriverDashboard({ setDriverToken }) {
     return `${backendOrigin}${withLeading}`;
   };
 
-  // Fetch driver profile
   const fetchDriverProfile = useCallback(async (email) => {
     if (!email) return;
     try {
@@ -60,7 +63,6 @@ export default function DriverDashboard({ setDriverToken }) {
     }
   }, []);
 
-  // Driver active state
   const fetchDriverActive = useCallback(async (email) => {
     try {
       const res = await fetch(`/api/driver/active/${email}`);
@@ -71,7 +73,6 @@ export default function DriverDashboard({ setDriverToken }) {
     } catch {}
   }, []);
 
-  // Fetch available rides
   const fetchAvailableRides = async () => {
     setLoadingAvailable(true);
     try {
@@ -84,7 +85,6 @@ export default function DriverDashboard({ setDriverToken }) {
     setLoadingAvailable(false);
   };
 
-  // Fetch my rides
   const fetchMyRides = async (email) => {
     if (!email) return;
     setLoadingMyRides(true);
@@ -98,16 +98,13 @@ export default function DriverDashboard({ setDriverToken }) {
     setLoadingMyRides(false);
   };
 
-  
-
   useEffect(() => {
     if (driverEmail) {
       fetchDriverProfile(driverEmail);
       fetchDriverActive(driverEmail);
       fetchAvailableRides();
       fetchMyRides(driverEmail);
-      
-      // Poll for available rides every 10 seconds
+
       const interval = setInterval(() => {
         fetchAvailableRides();
       }, 10000);
@@ -214,7 +211,7 @@ export default function DriverDashboard({ setDriverToken }) {
   const handleRefresh = () => {
     fetchAvailableRides();
     fetchMyRides(driverEmail);
-    
+
     setMessage("");
   };
 
@@ -222,6 +219,8 @@ export default function DriverDashboard({ setDriverToken }) {
     localStorage.removeItem("driverToken");
     setDriverEmail("");
     if (setDriverToken) setDriverToken(null);
+    if (geoWatchId !== null) { try { navigator.geolocation.clearWatch(geoWatchId); } catch {} setGeoWatchId(null); }
+    try { socket && socket.emit('driver:offline', { email: driverEmail }); } catch {}
     navigate("/driver-login", { replace: true });
   };
 
@@ -257,6 +256,14 @@ export default function DriverDashboard({ setDriverToken }) {
       if (res.ok) {
         setDriverStatus(data.driverStatus);
         setMessage('You are now Online');
+        try { socket && socket.emit('driver:online', { email: driverEmail }); } catch {}
+        if ('geolocation' in navigator) {
+          const id = navigator.geolocation.watchPosition((pos) => {
+            const { latitude, longitude } = pos.coords;
+            try { socket && socket.emit('driver:location', { email: driverEmail, lat: latitude, lng: longitude }); } catch {}
+          }, () => {}, { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
+          setGeoWatchId(id);
+        }
       } else {
         setMessage(data.message || 'Failed to go online');
       }
@@ -279,6 +286,8 @@ export default function DriverDashboard({ setDriverToken }) {
       if (res.ok) {
         setDriverStatus(data.driverStatus);
         setMessage('You are now Offline');
+        if (geoWatchId !== null) { try { navigator.geolocation.clearWatch(geoWatchId); } catch {} setGeoWatchId(null); }
+        try { socket && socket.emit('driver:offline', { email: driverEmail }); } catch {}
       } else {
         setMessage(data.message || 'Failed to go offline');
       }
@@ -288,13 +297,10 @@ export default function DriverDashboard({ setDriverToken }) {
     setToggling(false);
   };
 
-  // Removed request modal and timers
-
-  // Removed geolocation streaming for stability
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-100 via-yellow-100 to-blue-100 px-2 sm:px-4 py-6">
       <div className="max-w-7xl mx-auto">
+        
         {/* Enhanced Driver Profile & Stats */}
         {driverProfile && (
           <div className="bg-gradient-to-r from-green-200 via-yellow-100 to-blue-100 rounded-2xl shadow-lg p-6 flex flex-col sm:flex-row items-center gap-8 mb-8 border border-green-200">

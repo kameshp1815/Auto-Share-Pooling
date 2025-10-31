@@ -25,7 +25,10 @@ export default function AdminLogin() {
         localStorage.setItem('adminToken', token);
         if (data.email) localStorage.setItem('adminEmail', data.email);
         setSuccess("Login successful! Redirecting to admin dashboard...");
-        setTimeout(() => navigate('/admin-autoshare'), 800);
+        // Immediate SPA redirect
+        navigate('/admin-autoshare', { replace: true });
+        // Hard redirect fallback (in case of routing edge cases)
+        setTimeout(() => { if (window.location.pathname !== '/admin-autoshare') window.location.href = '/admin-autoshare'; }, 300);
       })
       .catch((err) => {
         const msg = err?.response?.data?.message || err.message || 'Invalid admin credentials';

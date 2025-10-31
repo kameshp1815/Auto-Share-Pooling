@@ -23,7 +23,8 @@ import UserManagement from "./admin/UserManagement";
 import DriverManagement from "./admin/DriverManagement";
 import AdminNavbar from "./admin/AdminNavbar";
 import AdminLogin from "./admin/AdminLogin";
-import RideStatus from "./components/RideStatus";
+import RidesList from "./admin/RidesList";
+import GroupsList from "./admin/GroupsList";
 
 function AdminHome() {
   const [loading, setLoading] = React.useState(true);
@@ -273,16 +274,6 @@ function App() {
               }
             />
             <Route
-              path="/ride-status"
-              element={
-                token ? (
-                  <RideStatus />
-                ) : (
-                  <Navigate to="/login" />
-                )
-              }
-            />
-            <Route
               path="/driver-login"
               element={
                 driverToken ? (
@@ -367,6 +358,26 @@ function App() {
               }
             />
             <Route
+              path="/admin/rides"
+              element={
+                localStorage.getItem('adminToken') ? (
+                  <RidesList />
+                ) : (
+                  <Navigate to="/admin-login" />
+                )
+              }
+            />
+            <Route
+              path="/admin/groups"
+              element={
+                localStorage.getItem('adminToken') ? (
+                  <GroupsList />
+                ) : (
+                  <Navigate to="/admin-login" />
+                )
+              }
+            />
+            <Route
               path="/admin-autoshare"
               element={
                 localStorage.getItem('adminToken') ? (
@@ -389,7 +400,11 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
-        <Footer />
+        {(() => {
+          const path = window.location.pathname;
+          const isAdminPage = path === '/admin-login' || path === '/admin-autoshare' || path.startsWith('/admin/');
+          return !isAdminPage;
+        })() && <Footer />}
       </div>
     </Router>
   );
