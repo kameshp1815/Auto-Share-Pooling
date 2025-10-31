@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth');
 const rideRoutes = require('./routes/rides');
 const googleAuthRoute = require('./routes/googleAuth');
 const driverRoutes = require('./routes/driver');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -46,6 +47,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/rides', rideRoutes);
 app.use('/api/auth', googleAuthRoute);
 app.use('/api/driver', driverRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Root route for server status
 app.get('/', (req, res) => {

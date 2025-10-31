@@ -11,6 +11,24 @@ export default function AdminNavbar() {
       <div className="text-2xl font-bold text-yellow-400">Admin Panel</div>
       <div className="flex items-center gap-6">
         <Link
+          to="/admin-autoshare"
+          className={`font-semibold hover:text-yellow-400 transition ${location.pathname === "/admin-autoshare" ? "text-yellow-400 underline" : ""}`}
+        >
+          Dashboard
+        </Link>
+        <Link
+          to="/admin/rides"
+          className={`font-semibold hover:text-yellow-400 transition ${location.pathname === "/admin/rides" ? "text-yellow-400 underline" : ""}`}
+        >
+          Rides
+        </Link>
+        <Link
+          to="/admin/groups"
+          className={`font-semibold hover:text-yellow-400 transition ${location.pathname === "/admin/groups" ? "text-yellow-400 underline" : ""}`}
+        >
+          Groups
+        </Link>
+        <Link
           to="/admin/users"
           className={`font-semibold hover:text-yellow-400 transition ${location.pathname === "/admin/users" ? "text-yellow-400 underline" : ""}`}
         >
