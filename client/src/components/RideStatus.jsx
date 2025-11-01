@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaUser, FaPhone, FaIdCard, FaCar, FaCircle, FaMapMarkerAlt, FaClock, FaCheckCircle, FaSpinner, FaTimes, FaStar, FaSearch, FaShieldAlt, FaShare, FaMotorcycle, FaTaxi, FaExternalLinkAlt } from "react-icons/fa";
 import io from "socket.io-client";
 import RideMap from "./RideMap";
+import { API_BASE_URL } from "../config/api";
 
 export default function RideStatus() {
   const [rideStatus, setRideStatus] = useState('searching');
@@ -29,7 +30,8 @@ export default function RideStatus() {
   // WebSocket connection for real-time updates
   useEffect(() => {
     if (userEmail) {
-      const newSocket = io('http://localhost:5000');
+      const base = API_BASE_URL || window.location.origin;
+      const newSocket = io(base);
       setSocket(newSocket);
 
       newSocket.on('ride:status-update', (data) => {
@@ -72,7 +74,7 @@ export default function RideStatus() {
     if (!userEmail) return;
 
     try {
-      const res = await fetch(`/api/rides/ongoing/${userEmail}`);
+      const res = await fetch(`${API_BASE_URL}/api/rides/ongoing/${userEmail}`);
       if (res.ok) {
         const data = await res.json();
         if (data) {

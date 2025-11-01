@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_BASE_URL, fileUrl } from "../config/api";
 
 export default function DriverProfile() {
   const [email, setEmail] = useState("");
@@ -27,7 +28,7 @@ export default function DriverProfile() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`/api/auth/driver-profile/${email}`);
+        const res = await fetch(`${API_BASE_URL}/api/auth/driver-profile/${email}`);
         if (!res.ok) throw new Error("Failed to load profile");
         const data = await res.json();
         setProfile(data);
@@ -39,14 +40,7 @@ export default function DriverProfile() {
     load();
   }, [email]);
 
-  const backendOrigin = "http://localhost:5000";
-  const fileToUrl = (p) => {
-    if (!p) return "";
-    if (p.startsWith('http')) return p;
-    const trimmed = p.replace(/^[A-Za-z]:.*uploads[\\\/]*/i, 'uploads/').replace(/\\/g, '/');
-    const withLeading = trimmed.startsWith('uploads/') ? `/${trimmed}` : trimmed.startsWith('/uploads/') ? trimmed : `/uploads/${trimmed}`;
-    return `${backendOrigin}${withLeading}`;
-  };
+  const fileToUrl = (p) => fileUrl(p);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-100 via-yellow-100 to-blue-100 px-2 sm:px-4 py-6">

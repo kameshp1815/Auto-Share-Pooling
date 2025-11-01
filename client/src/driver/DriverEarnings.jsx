@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { API_BASE_URL } from "../config/api";
 
 export default function DriverEarnings() {
   const [email, setEmail] = useState("");
@@ -19,8 +20,8 @@ export default function DriverEarnings() {
       setLoading(true); setError("");
       try {
         const [rRes, eRes] = await Promise.all([
-          fetch(`/api/rides/driver/${email}`),
-          fetch(`/api/rides/earnings/${email}`)
+          fetch(`${API_BASE_URL}/api/rides/driver/${email}`),
+          fetch(`${API_BASE_URL}/api/rides/earnings/${email}`)
         ]);
         if (!rRes.ok) throw new Error('Failed to load rides');
         if (!eRes.ok) throw new Error('Failed to load earnings');

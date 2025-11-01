@@ -25,6 +25,7 @@ import AdminNavbar from "./admin/AdminNavbar";
 import AdminLogin from "./admin/AdminLogin";
 import RidesList from "./admin/RidesList";
 import GroupsList from "./admin/GroupsList";
+import { API_BASE_URL } from "./config/api";
 
 function AdminHome() {
   const [loading, setLoading] = React.useState(true);
@@ -40,9 +41,9 @@ function AdminHome() {
       setError("");
       try {
         const [uRes, dRes, rRes] = await Promise.all([
-          fetch('/api/auth/admin/users'),
-          fetch('/api/auth/admin/drivers'),
-          fetch('/api/rides/available'),
+          fetch(`${API_BASE_URL}/api/auth/admin/users`),
+          fetch(`${API_BASE_URL}/api/auth/admin/drivers`),
+          fetch(`${API_BASE_URL}/api/rides/available`),
         ]);
         if (!uRes.ok || !dRes.ok || !rRes.ok) throw new Error('Failed to load admin data');
         const [u, d, r] = await Promise.all([uRes.json(), dRes.json(), rRes.json()]);
@@ -185,7 +186,7 @@ function App() {
     async function fetchProfile() {
       const path = window.location.pathname || '';
       if (driverEmail && path.startsWith('/driver')) {
-        const res = await fetch(`/api/auth/driver-profile/${driverEmail}`);
+        const res = await fetch(`${API_BASE_URL}/api/auth/driver-profile/${driverEmail}`);
         if (res.ok) {
           const data = await res.json();
           setDriverProfileCompleted(!!data.driverProfileCompleted);

@@ -1,5 +1,6 @@
 import React from 'react';
 import AdminNavbar from './AdminNavbar';
+import { API_BASE_URL } from "../config/api";
 
 export default function AdminDashboard() {
   const [loading, setLoading] = React.useState(true);
@@ -11,7 +12,7 @@ export default function AdminDashboard() {
     (async () => {
       setLoading(true); setError('');
       try {
-        const res = await fetch('/api/admin/metrics');
+        const res = await fetch(`${API_BASE_URL}/api/admin/metrics`);
         if (!res.ok) throw new Error('Failed to load metrics');
         const data = await res.json();
         if (!cancel) setMetrics(data);

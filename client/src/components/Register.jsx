@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import taxiLogo from "../assets/taxi.png";
+import { API_BASE_URL } from "../config/api";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -12,7 +13,7 @@ export default function Register() {
   const [otpVerified, setOtpVerified] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const API = ""; // Using Vite proxy in dev; adjust if needed with VITE_API_BASE_URL
+  const API = API_BASE_URL;
 
   const requestOtp = async () => {
     setMessage("");

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FaCircle, FaEnvelope, FaPhone, FaIdBadge, FaCarSide, FaCheckCircle, FaClipboardList } from "react-icons/fa";
 import { useCallback } from "react";
 import io from "socket.io-client";
+import { API_BASE_URL, fileUrl } from "../config/api";
 
 export default function DriverDashboard({ setDriverToken }) {
   const navigate = useNavigate();
@@ -34,24 +35,19 @@ export default function DriverDashboard({ setDriverToken }) {
   }, []);
 
   useEffect(() => {
-    const s = io('http://localhost:5000');
+    const base = API_BASE_URL || window.location.origin;
+    const s = io(base);
     setSocket(s);
     return () => { try { s.close(); } catch {} };
   }, []);
 
-  const backendOrigin = "http://localhost:5000";
-  const fileToUrl = (p) => {
-    if (!p) return "";
-    if (p.startsWith('http')) return p;
-    const trimmed = p.replace(/^[A-Za-z]:.*uploads[\\\/]*/i, 'uploads/').replace(/\\/g, '/');
-    const withLeading = trimmed.startsWith('uploads/') ? `/${trimmed}` : trimmed.startsWith('/uploads/') ? trimmed : `/uploads/${trimmed}`;
-    return `${backendOrigin}${withLeading}`;
-  };
+  const fileToUrl = (p) => fileUrl(p);
 
   const fetchDriverProfile = useCallback(async (email) => {
     if (!email) return;
     try {
-      const res = await fetch(`/api/auth/driver-profile/${email}`);
+      const res = await fetch(`${API_BASE_URL}/api/auth/driver-profile/${email}`);
+
       if (res.ok) {
         const data = await res.json();
         setDriverProfile(data);
@@ -65,7 +61,8 @@ export default function DriverDashboard({ setDriverToken }) {
 
   const fetchDriverActive = useCallback(async (email) => {
     try {
-      const res = await fetch(`/api/driver/active/${email}`);
+      const res = await fetch(`${API_BASE_URL}/api/driver/active/${email}`);
+
       if (res.ok) {
         const data = await res.json();
         setDriverStatus(data.driverStatus || 'offline');
@@ -76,7 +73,8 @@ export default function DriverDashboard({ setDriverToken }) {
   const fetchAvailableRides = async () => {
     setLoadingAvailable(true);
     try {
-      const res = await fetch("/api/rides/available");
+      const res = await fetch(`${API_BASE_URL}/api/rides/available`);
+
       const data = await res.json();
       setAvailableRides(data);
     } catch {
@@ -89,7 +87,8 @@ export default function DriverDashboard({ setDriverToken }) {
     if (!email) return;
     setLoadingMyRides(true);
     try {
-      const res = await fetch(`/api/rides/driver/${email}`);
+      const res = await fetch(`${API_BASE_URL}/api/rides/driver/${email}`);
+
       const data = await res.json();
       setMyRides(data);
     } catch {
@@ -117,7 +116,7 @@ export default function DriverDashboard({ setDriverToken }) {
     setLoadingMyRides(true);
     setMessage("");
     try {
-      const res = await fetch(`/api/rides/accept/${rideId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/rides/accept/${rideId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ driver: driverEmail })
@@ -143,7 +142,7 @@ export default function DriverDashboard({ setDriverToken }) {
     setLoadingMyRides(true);
     setMessage("");
     try {
-      const res = await fetch(`/api/rides/arrived/${rideId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/rides/arrived/${rideId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ driver: driverEmail })
@@ -166,7 +165,7 @@ export default function DriverDashboard({ setDriverToken }) {
     setLoadingMyRides(true);
     setMessage("");
     try {
-      const res = await fetch(`/api/rides/start/${rideId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/rides/start/${rideId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ driver: driverEmail })
@@ -189,7 +188,7 @@ export default function DriverDashboard({ setDriverToken }) {
     setLoadingMyRides(true);
     setMessage("");
     try {
-      const res = await fetch(`/api/rides/complete/${rideId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/rides/complete/${rideId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ driver: driverEmail, paymentMethod })
@@ -247,7 +246,7 @@ export default function DriverDashboard({ setDriverToken }) {
     if (!driverEmail) return;
     setToggling(true);
     try {
-      const res = await fetch('/api/driver/online', {
+      const res = await fetch(`${API_BASE_URL}/api/driver/online`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: driverEmail })
@@ -277,7 +276,7 @@ export default function DriverDashboard({ setDriverToken }) {
     if (!driverEmail) return;
     setToggling(true);
     try {
-      const res = await fetch('/api/driver/offline', {
+      const res = await fetch(`${API_BASE_URL}/api/driver/offline`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: driverEmail })

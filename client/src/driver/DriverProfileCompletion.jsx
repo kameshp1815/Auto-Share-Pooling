@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { API_BASE_URL } from "../config/api";
 
 export default function DriverProfileCompletion({ email, onComplete }) {
   const [form, setForm] = useState({
@@ -48,7 +49,7 @@ export default function DriverProfileCompletion({ email, onComplete }) {
     Object.entries(form).forEach(([k, v]) => data.append(k, v));
     Object.entries(files).forEach(([k, v]) => v && data.append(k, v));
     try {
-      const res = await fetch("/api/auth/driver-profile/complete", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/driver-profile/complete`, {
         method: "POST",
         body: data,
       });

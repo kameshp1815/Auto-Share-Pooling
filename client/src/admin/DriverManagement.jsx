@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { API_BASE_URL, fileUrl } from "../config/api";
 
 function DriverDetailModal({ driver, onClose }) {
   if (!driver) return null;
-  const backendOrigin = "http://localhost:5000";
-  const toUrl = (p) => {
-    if (!p) return '';
-    const trimmed = p.replace(/^[A-Za-z]:.*uploads[\\\/]*/i, 'uploads/').replace(/\\/g, '/');
-    return `${backendOrigin}/${trimmed}`;
-  };
+  const toUrl = (p) => fileUrl(p);
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 relative">
@@ -62,7 +58,7 @@ export default function DriverManagement() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/auth/admin/drivers");
+      const res = await fetch(`${API_BASE_URL}/api/auth/admin/drivers`);
       if (!res.ok) throw new Error("Failed to fetch drivers");
       const data = await res.json();
       setDrivers(data);
@@ -78,7 +74,7 @@ export default function DriverManagement() {
 
   async function approveDriver(email) {
     try {
-      const res = await fetch(`/api/auth/admin/drivers/approve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+      const res = await fetch(`${API_BASE_URL}/api/auth/admin/drivers/approve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
       if (!res.ok) throw new Error('Approve failed');
       await fetchDrivers();
       if (selectedDriver && selectedDriver.email === email) setSelectedDriver({ ...selectedDriver, driverApproved: true });
@@ -89,7 +85,7 @@ export default function DriverManagement() {
 
   async function banDriver(email) {
     try {
-      const res = await fetch(`/api/auth/admin/drivers/ban`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+      const res = await fetch(`${API_BASE_URL}/api/auth/admin/drivers/ban`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
       if (!res.ok) throw new Error('Ban failed');
       await fetchDrivers();
       if (selectedDriver && selectedDriver.email === email) setSelectedDriver({ ...selectedDriver, banned: true });
@@ -100,7 +96,7 @@ export default function DriverManagement() {
 
   async function unbanDriver(email) {
     try {
-      const res = await fetch(`/api/auth/admin/drivers/unban`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+      const res = await fetch(`${API_BASE_URL}/api/auth/admin/drivers/unban`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
       if (!res.ok) throw new Error('Unban failed');
       await fetchDrivers();
       if (selectedDriver && selectedDriver.email === email) setSelectedDriver({ ...selectedDriver, banned: false });

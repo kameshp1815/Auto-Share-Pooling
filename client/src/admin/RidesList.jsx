@@ -1,6 +1,6 @@
 import React from 'react';
+import { API_BASE_URL } from "../config/api";
 
-const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 export default function RidesList() {
   const [loading, setLoading] = React.useState(true);
@@ -16,7 +16,7 @@ export default function RidesList() {
       if (filters.driver) params.set('driver', filters.driver);
       if (filters.dateFrom) params.set('dateFrom', filters.dateFrom);
       if (filters.dateTo) params.set('dateTo', filters.dateTo);
-      const res = await fetch(`${API_BASE}/api/admin/rides?${params.toString()}`);
+      const res = await fetch(`${API_BASE_URL}/api/admin/rides?${params.toString()}`);
       if (!res.ok) throw new Error('Failed to load rides');
       const data = await res.json();
       setRows(Array.isArray(data) ? data : []);

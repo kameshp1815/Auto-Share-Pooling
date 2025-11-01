@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { API_BASE_URL } from "../config/api";
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
@@ -13,7 +14,7 @@ export default function UserManagement() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch("/api/auth/admin/users");
+        const res = await fetch(`${API_BASE_URL}/api/auth/admin/users`);
         if (!res.ok) throw new Error("Failed to fetch users");
         const data = await res.json();
         setUsers(Array.isArray(data) ? data.filter(u => (u?.type || 'user') !== 'driver') : []);
@@ -44,7 +45,7 @@ export default function UserManagement() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/auth/admin/users");
+      const res = await fetch(`${API_BASE_URL}/api/auth/admin/users`);
       if (!res.ok) throw new Error("Failed to fetch users");
       const data = await res.json();
       setUsers(Array.isArray(data) ? data.filter(u => (u?.type || 'user') !== 'driver') : []);

@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { FaMapMarkerAlt, FaExchangeAlt, FaHome, FaBriefcase, FaMotorcycle, FaCarSide, FaTaxi, FaCreditCard, FaSpinner, FaMoneyBillWave, FaWallet, FaMobileAlt, FaTimes } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from "../config/api";
 
 
 const LOCATIONIQ_API_KEY = import.meta.env.VITE_LOCATIONIQ_API_KEY;
@@ -364,7 +365,7 @@ export default function Booking() {
     setMessage("");
     
     try {
-      const res = await fetch("/api/rides/book", {
+      const res = await fetch(`${API_BASE_URL}/api/rides/book`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -408,7 +409,7 @@ export default function Booking() {
 
     try {
       // Create payment order
-      const orderRes = await fetch('/api/payment/order', {
+      const orderRes = await fetch(`${API_BASE_URL}/api/payment/order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -441,7 +442,7 @@ export default function Booking() {
             setMessage("🔍 Verifying payment...");
             
             // Verify payment
-            const verifyRes = await fetch('/api/payment/verify', {
+            const verifyRes = await fetch(`${API_BASE_URL}/api/payment/verify`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

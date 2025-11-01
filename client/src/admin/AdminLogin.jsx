@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FiLock, FiMail, FiEye, FiEyeOff, FiShield } from "react-icons/fi";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -18,8 +19,7 @@ export default function AdminLogin() {
     setSuccess("");
     setIsSubmitting(true);
 
-    const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
-    axios.post(`${API_BASE}/api/auth/admin-login`, { email, password })
+    axios.post(`${API_BASE_URL}/api/auth/admin-login`, { email, password })
       .then(({ data }) => {
         const token = data.token || 'true';
         localStorage.setItem('adminToken', token);

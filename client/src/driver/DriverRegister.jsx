@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import driverimage from "../assets/driver.png";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
 
 export default function DriverRegister() {
   const [name, setName] = useState("");
@@ -17,7 +18,7 @@ export default function DriverRegister() {
       setMessage("Please enter a valid 10-digit phone number.");
       return;
     }
-    const response = await fetch("/api/auth/driver-register", {
+    const response = await fetch(`${API_BASE_URL}/api/auth/driver-register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password, phone }),

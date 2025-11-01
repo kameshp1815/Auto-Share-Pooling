@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import driverimage from "../assets/driver.png";
+import { API_BASE_URL } from "../config/api";
 
 export default function DriverLogin({ setDriverToken }) {
   const [email, setEmail] = useState("");
@@ -12,11 +13,12 @@ export default function DriverLogin({ setDriverToken }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    const response = await fetch("/api/auth/driver-login", {
+    const response = await fetch(`${API_BASE_URL}/api/auth/driver-login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
+
     const data = await response.json();
     if (response.ok) {
       localStorage.setItem("driverToken", data.token);

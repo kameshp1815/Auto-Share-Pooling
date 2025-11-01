@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import autoLogo from "../assets/auto.png";
 import { GoogleLogin } from '@react-oauth/google';
+import { API_BASE_URL } from "../config/api";
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -12,11 +13,12 @@ export default function Login({ onLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    const response = await fetch("/api/auth/login", {
+    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
+
     const data = await response.json();
     if (response.ok) {
       localStorage.setItem("token", data.token);
@@ -68,7 +70,7 @@ export default function Login({ onLogin }) {
         <div className="mt-4 flex flex-col items-center">
           <GoogleLogin
             onSuccess={credentialResponse => {
-              fetch("http://localhost:5000/api/auth/google", {
+              fetch(`${API_BASE_URL}/api/auth/google`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ token: credentialResponse.credential }),

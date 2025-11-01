@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCircle, FaUser, FaPhone, FaCar, FaIdCard, FaBolt, FaCreditCard, FaHistory, FaShieldAlt, FaChartPie, FaFilter } from "react-icons/fa";
 import io from "socket.io-client";
+import { API_BASE_URL } from "../config/api";
 
 export default function Profile() {
   const token = localStorage.getItem("token");
@@ -44,7 +45,8 @@ export default function Profile() {
 
   useEffect(() => {
     if (!userEmail) return;
-    const s = io('http://localhost:5000');
+    const base = API_BASE_URL || window.location.origin;
+    const s = io(base);
     setSocket(s);
     const handleStatus = (data) => {
       if ((data.userEmail || '').toLowerCase() === userEmail) {
@@ -72,7 +74,7 @@ export default function Profile() {
     e.preventDefault();
     setMessage("");
     if (!password) return setMessage("Password cannot be empty");
-    const res = await fetch("/api/auth/profile", {
+    const res = await fetch(`${API_BASE_URL}/api/auth/profile`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ password }),
@@ -90,7 +92,7 @@ export default function Profile() {
     if (!userEmail) return;
     setLoadingHistory(true);
     try {
-      const res = await fetch(`/api/rides/history/${userEmail}`);
+      const res = await fetch(`${API_BASE_URL}/api/rides/history/${userEmail}`);
       if (res.ok) {
         const data = await res.json();
         setHistory(data);
@@ -106,7 +108,7 @@ export default function Profile() {
   const fetchOngoing = async () => {
     if (!userEmail) return;
     try {
-      const res = await fetch(`/api/rides/ongoing/${userEmail}`);
+      const res = await fetch(`${API_BASE_URL}/api/rides/ongoing/${userEmail}`);
       if (res.ok) {
         const data = await res.json();
         setOngoingRide(data || null);

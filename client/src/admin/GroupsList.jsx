@@ -1,7 +1,7 @@
 import React from 'react';
+import { API_BASE_URL } from "../config/api";
 
 export default function GroupsList() {
-  const API_BASE = import.meta.env.VITE_API_BASE || '';
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
   const [rows, setRows] = React.useState([]);
@@ -13,7 +13,7 @@ export default function GroupsList() {
       const params = new URLSearchParams();
       if (filters.status) params.set('status', filters.status);
       if (filters.driverId) params.set('driverId', filters.driverId);
-      const res = await fetch(`${API_BASE}/api/admin/groups?${params.toString()}`);
+      const res = await fetch(`${API_BASE_URL}/api/admin/groups?${params.toString()}`);
       if (!res.ok) throw new Error('Failed to load groups');
       const data = await res.json();
       setRows(Array.isArray(data) ? data : []);
