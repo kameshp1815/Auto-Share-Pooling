@@ -69,7 +69,6 @@ function AdminHome() {
 
   return (
     <>
-      <AdminNavbar />
       <div className="p-6 md:p-8">
         <h1 className="text-2xl md:text-3xl font-extrabold mb-6">Admin Dashboard</h1>
         {loading ? (
@@ -206,8 +205,11 @@ function App() {
         {(() => {
           const path = window.location.pathname;
           const isAdminPage = path === '/admin-login' || path === '/admin-autoshare' || path.startsWith('/admin/');
-          return !isAdminPage;
-        })() && <Navbar token={token} setToken={setToken} driverToken={driverToken} setDriverToken={setDriverToken} />}
+          if (isAdminPage) {
+            return path === '/admin-login' ? null : <AdminNavbar />;
+          }
+          return <Navbar token={token} setToken={setToken} driverToken={driverToken} setDriverToken={setDriverToken} />;
+        })()}
         <main className="flex-1">
           <Routes>
             <Route

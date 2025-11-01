@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import AdminNavbar from "./AdminNavbar";
 
 function DriverDetailModal({ driver, onClose }) {
   if (!driver) return null;
@@ -112,9 +111,9 @@ export default function DriverManagement() {
 
   return (
     <>
-      <AdminNavbar />
       <div className="p-8">
         <h1 className="text-2xl font-bold mb-4">Driver Management</h1>
+
         {loading ? (
           <div className="text-center text-gray-500">Loading drivers...</div>
         ) : error ? (

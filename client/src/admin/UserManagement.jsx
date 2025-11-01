@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import AdminNavbar from "./AdminNavbar";
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
@@ -69,7 +68,6 @@ export default function UserManagement() {
 
   return (
     <>
-      <AdminNavbar />
       <div className="p-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
           <h1 className="text-2xl font-bold">User Management</h1>

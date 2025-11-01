@@ -1,5 +1,4 @@
 import React from 'react';
-import AdminNavbar from './AdminNavbar';
 
 export default function GroupsList() {
   const API_BASE = import.meta.env.VITE_API_BASE || '';
@@ -27,7 +26,6 @@ export default function GroupsList() {
 
   return (
     <>
-      <AdminNavbar />
       <div className="p-6 md:p-8">
         <h1 className="text-2xl font-extrabold mb-4">Groups</h1>
         <div className="flex flex-wrap gap-2 mb-4">

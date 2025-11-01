@@ -1,5 +1,4 @@
 import React from 'react';
-import AdminNavbar from './AdminNavbar';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '';
 
@@ -30,7 +29,6 @@ export default function RidesList() {
 
   return (
     <>
-      <AdminNavbar />
       <div className="p-6 md:p-8">
         <h1 className="text-2xl font-extrabold mb-4">Rides</h1>
         <div className="flex flex-wrap gap-2 mb-4">
