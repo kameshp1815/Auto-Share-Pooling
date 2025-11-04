@@ -33,9 +33,20 @@ export default function Booking() {
   const navigate = useNavigate();
   const [geoLoading, setGeoLoading] = useState(false);
 
-  // Get user email from JWT token
+  // Get user email robustly from JWT token (base64url) or fallback to stored value
   const token = localStorage.getItem("token");
-  const userEmail = token ? JSON.parse(atob(token.split('.')[1])).email : "";
+  const decodedEmail = (() => {
+    try {
+      if (!token) return null;
+      const payloadPart = token.split('.')[1];
+      const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+      const json = JSON.parse(atob(base64));
+      return (json.email || json.userEmail || json.user?.email || json.sub || "").toLowerCase();
+    } catch {
+      return null;
+    }
+  })();
+  const userEmail = decodedEmail || (localStorage.getItem("userEmail") || "");
 
   // Quick locations
   const quickLocations = {

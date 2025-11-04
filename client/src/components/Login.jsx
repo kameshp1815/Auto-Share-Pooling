@@ -22,6 +22,15 @@ export default function Login({ onLogin }) {
     const data = await response.json();
     if (response.ok) {
       localStorage.setItem("token", data.token);
+      try {
+        const payloadPart = data.token.split('.')[1];
+        const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+        const json = JSON.parse(atob(base64));
+        const userEmail = json.email || json.userEmail || json.user?.email || json.sub || "";
+        if (userEmail) {
+          localStorage.setItem("userEmail", userEmail);
+        }
+      } catch {}
       onLogin && onLogin(data.token);
       navigate("/dashboard");
     } else {
@@ -79,6 +88,15 @@ export default function Login({ onLogin }) {
                 .then(data => {
                   if (data.token) {
                     localStorage.setItem("token", data.token);
+                    try {
+                      const payloadPart = data.token.split('.')[1];
+                      const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+                      const json = JSON.parse(atob(base64));
+                      const userEmail = json.email || json.userEmail || json.user?.email || json.sub || "";
+                      if (userEmail) {
+                        localStorage.setItem("userEmail", userEmail);
+                      }
+                    } catch {}
                     onLogin && onLogin(data.token);
                     navigate("/dashboard");
                   } else {
