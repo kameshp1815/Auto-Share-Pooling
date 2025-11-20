@@ -32,6 +32,9 @@ export default function Booking() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('upi');
   const navigate = useNavigate();
   const [geoLoading, setGeoLoading] = useState(false);
+  // Frontend-only pooling state
+  const [rideType, setRideType] = useState('solo'); // 'solo' | 'shared'
+  const [seats, setSeats] = useState(2);
 
   // Get user email robustly from JWT token (base64url) or fallback to stored value
   const token = localStorage.getItem("token");
@@ -53,6 +56,11 @@ export default function Booking() {
     home: "Home, Main Street",
     work: "Work, Tech Park"
   };
+
+  // Derived fares for shared view (no backend impact)
+  const soloFareValue = distance ? calculateFare(distance, vehicle) : null;
+  const sharedGroupFareValue = soloFareValue ? Math.round(soloFareValue * 0.8) : null; // ~20% off
+  const sharedPerSeatFareValue = sharedGroupFareValue && seats ? Math.round(sharedGroupFareValue / seats) : null;
 
   // Use current GPS location for Pickup and reverse geocode
   const handleUseCurrentLocation = async () => {
@@ -595,6 +603,43 @@ export default function Booking() {
       {/* Main Content: Booking Form Only */}
       <form onSubmit={handleSubmit} className="w-full max-w-md flex-1 flex flex-col px-0 sm:px-2 py-6">
         <div className="bg-white/60 backdrop-blur-xl rounded-3xl shadow-2xl p-4 sm:p-6 mb-4 relative border border-yellow-100/60">
+          {/* Ride Type (Solo / Shared) */}
+          <div className="mb-6">
+            <h2 className="text-base font-semibold text-gray-800 mb-3">Ride type</h2>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setRideType('solo')}
+                className={`p-3 rounded-2xl border text-sm font-semibold ${rideType==='solo' ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200 bg-white'}`}
+              >Solo</button>
+              <button
+                type="button"
+                onClick={() => setRideType('shared')}
+                className={`p-3 rounded-2xl border text-sm font-semibold ${rideType==='shared' ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200 bg-white'}`}
+              >Shared (Pooling)</button>
+            </div>
+            {rideType === 'shared' && (
+              <div className="mt-3 flex items-center justify-between">
+                <div className="text-sm text-gray-700 font-medium">Seats</div>
+                <div className="flex items-center gap-2">
+                  {[1,2,3].map(n => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setSeats(n)}
+                      className={`px-3 py-1.5 rounded-xl border text-sm font-semibold ${seats===n ? 'bg-yellow-400 text-white border-yellow-500' : 'bg-white border-gray-200 text-gray-700'}`}
+                    >{n}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {rideType === 'shared' && distance && (
+              <div className="mt-3 flex items-center justify-between bg-yellow-50 border border-yellow-100 rounded-2xl p-3">
+                <div className="text-sm text-yellow-800 font-semibold">Per seat (est.)</div>
+                <div className="text-base font-extrabold text-yellow-900">{sharedPerSeatFareValue ? `₹${sharedPerSeatFareValue}` : '-'}</div>
+              </div>
+            )}
+          </div>
           {/* Vehicle Selection */}
           <div className="mb-8">
             <h2 className="text-base font-semibold text-gray-800 mb-3">Choose your ride</h2>
@@ -752,11 +797,27 @@ export default function Booking() {
 
           {fare && distance && !calculating && (
             <div className="bg-gradient-to-br from-yellow-100/90 to-yellow-200/80 rounded-2xl shadow-lg p-5 mb-6 border border-yellow-200/60">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-yellow-700 font-semibold">Total Fare</span>
-                <span className="text-2xl font-extrabold text-yellow-900 drop-shadow">{fare}</span>
-              </div>
-              <div className="flex items-center justify-between">
+              {rideType === 'solo' && (
+                <>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-yellow-700 font-semibold">Total Fare</span>
+                    <span className="text-2xl font-extrabold text-yellow-900 drop-shadow">{fare}</span>
+                  </div>
+                </>
+              )}
+              {rideType === 'shared' && (
+                <>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-yellow-700 font-semibold">Group Fare (est.)</span>
+                    <span className="text-xl font-extrabold text-yellow-900">{sharedGroupFareValue ? `₹${sharedGroupFareValue}` : '-'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-yellow-700 font-semibold">Per Seat (est.)</span>
+                    <span className="text-2xl font-extrabold text-yellow-900">{sharedPerSeatFareValue ? `₹${sharedPerSeatFareValue}` : '-'}</span>
+                  </div>
+                </>
+              )}
+              <div className="flex items-center justify-between mt-2">
                 <span className="text-yellow-700 font-semibold">Distance</span>
                 <span className="text-lg font-bold text-yellow-800">{distance.toFixed(1)} km</span>
               </div>
@@ -801,7 +862,7 @@ export default function Booking() {
             {loading ? (
               <span className="flex items-center justify-center"><span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></span>Booking...</span>
             ) : (
-              `Book ${vehicle.charAt(0).toUpperCase() + vehicle.slice(1)}`
+              rideType === 'shared' ? 'Book Shared Ride' : `Book ${vehicle.charAt(0).toUpperCase() + vehicle.slice(1)}`
             )}
           </button>
         </div>
